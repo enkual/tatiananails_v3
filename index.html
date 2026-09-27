@@ -1015,7 +1015,7 @@ class Component extends DCLogic {
   detect() { const l = (navigator.language || 'lv').slice(0, 2); return I18N[l] ? l : 'lv'; }
   syncRoute() {
     const h = String(location.hash || '');
-    this.setState({ route: h.indexOf('admin') > -1 ? 'admin' : 'site' });
+    this.setState({ route: 'site' });
   }
   write(s) {
     if (!s || !Array.isArray(s.bookings)) return;
