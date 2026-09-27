@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/styles.css">
+<script src="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<script src="./config.js"></script>
+<script src="./booking-store.js"></script>
+<style>
+html{scroll-behavior:smooth}
+:root{
+--color-accent:#D49286;
+--color-accent-100:#fbf1ee;--color-accent-200:#f4ded8;--color-accent-300:#ecc7bd;
+--color-accent-400:#e0ac9f;--color-accent-500:#D49286;--color-accent-600:#c07c6e;
+--color-accent-700:#a26154;--color-accent-800:#7b473c;--color-accent-900:#4f2e26;
+--color-accent-2:#D49286;
+--color-accent-2-100:#fbf1ee;--color-accent-2-200:#f4ded8;--color-accent-2-300:#ecc7bd;
+--color-accent-2-400:#e0ac9f;--color-accent-2-500:#D49286;--color-accent-2-600:#c07c6e;
+--color-accent-2-700:#a26154;--color-accent-2-800:#7b473c;--color-accent-2-900:#4f2e26;
+}
+html{scroll-padding-top:78px}
+header.nav{flex-wrap:nowrap;gap:14px}
+header.nav>nav{display:flex;flex:1 1 auto;min-width:0;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;gap:18px}
+/* Phones cannot fit brand + five labels + the language switcher on one row,
+   so below 700px the language box shares the brand row and the nav takes a
+   full-width row of its own — every link visible, no hidden scroll strip. */
+@media (max-width:700px){
+  header.nav{flex-wrap:wrap;row-gap:10px;padding-top:12px;padding-bottom:12px}
+  header.nav>nav{order:3;flex:1 0 100%;overflow-x:visible;white-space:normal;flex-wrap:wrap;gap:10px 16px}
+  header.nav>div:last-of-type{margin-left:auto}
+  html{scroll-padding-top:104px}
+  section[id]{scroll-margin-top:104px}
+}
+section[id]{scroll-margin-top:78px}
+header nav{scrollbar-width:none}
+header nav::-webkit-scrollbar{display:none}
+/* belt-and-braces against sideways panning. `clip` (not `hidden`) so the
+   other axis stays `visible` — `hidden` would coerce it to `auto` and turn
+   <body> into a scroll container, which breaks iOS document scrolling. */
+html,body{overflow-x:clip}
+body{margin:0;background:var(--color-bg);-webkit-text-size-adjust:100%}
+img,iframe{max-width:100%}
+body[data-guest] image-slot{pointer-events:none}
+.btn-primary{color:var(--color-text)}
+.radio input:checked + .dot{box-shadow:inset 0 0 0 4px var(--color-bg)}
+a{color:var(--color-accent);text-decoration:none}
+a:hover{color:#D49286;text-decoration:underline}
+select.input{appearance:none;background-image:none}
+@media print{.no-print{display:none!important}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+<sc-if value="{{ isSite }}" hint-placeholder-val="{{ true }}">
+
+</sc-if>
+
+<sc-if value="{{ revOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeReviews }}" style="position:fixed;inset:0;z-index:180;background:color-mix(in srgb, var(--color-neutral-900) 62%, transparent);display:flex;align-items:flex-start;justify-content:center;padding:clamp(12px,5vh,64px) clamp(10px,4vw,32px);overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div onClick="{{ stop }}" style="width:min(660px,100%);max-height:calc(100dvh - clamp(24px,10vh,128px));display:flex;flex-direction:column;background:var(--color-bg);border-radius:5px;box-shadow:var(--shadow-lg)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:clamp(16px,4.5vw,24px) clamp(16px,4.5vw,24px) 16px;flex:none">
+        <div>
+          <div style="font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent-700); font-weight: 700; margin-bottom: 6px">{{ t.rev_book }}</div>
+          <div class="text-muted" style="font-size:13px">{{ revSummary }}</div>
+        </div>
+        <button onClick="{{ closeReviews }}" style="flex:none;width:44px;height:44px;border:1px solid var(--color-divider);border-radius:5px;background:transparent;color:var(--color-text);font-size:18px;line-height:1;cursor:pointer" style-hover="background:var(--color-accent-100)">×</button>
+      </div>
+      <div style="height:2px;background:var(--color-divider);flex:none"></div>
+      <div style="padding:0 clamp(16px,4.5vw,24px) clamp(16px,4.5vw,24px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+        <sc-for list="{{ allReviews }}" as="r" hint-placeholder-count="6">
+          <div style="padding:20px 0;border-bottom:1px solid var(--color-divider)">
+            <p style="font-size:15px;line-height:1.55;margin:0 0 10px;text-wrap:pretty">{{ r.q }}</p>
+            <div style="display:flex;gap:8px 14px;flex-wrap:wrap;align-items:baseline">
+              <span style="font-size:13px;font-family:var(--font-heading);font-weight:800">{{ r.who }}</span>
+              <span class="text-muted" style="font-size:12px">{{ r.meta }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <p class="text-muted" style="font-size:12px;margin:16px 0 0">{{ t.rev_note }}</p>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ lbOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ lbClose }}" style="position:fixed;inset:0;z-index:200;background:color-mix(in srgb, var(--color-neutral-900) 86%, transparent);display:flex;align-items:center;justify-content:center;padding:56px 64px;cursor:zoom-out">
+    {{ lbImg }}
+    <button onClick="{{ lbClose }}" style="position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border: none; background: var(--color-accent); color: var(--color-text); font-size: 20px; font-family: var(--font-heading); font-weight: 800; cursor: pointer; border-radius: 5px">×</button>
+    <sc-if value="{{ lbMulti }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;pointer-events:none">
+        <button onClick="{{ lbPrev }}" style="pointer-events: auto; width: 44px; height: 44px; border: none; background: var(--color-bg); color: var(--color-text); font-size: 20px; cursor: pointer; border-radius: 5px">‹</button>
+        <span style="font-size:12px;letter-spacing:0.14em;color:var(--color-bg)">{{ lbCount }}</span>
+        <button onClick="{{ lbNext }}" style="pointer-events: auto; width: 44px; height: 44px; border: none; background: var(--color-bg); color: var(--color-text); font-size: 20px; cursor: pointer; border-radius: 5px">›</button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Admin calendar">
+
+  <sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:grid;place-items:center;padding:32px">
+      <div style="width:min(360px,100%)">
+        <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px">{{ brandName }}</div>
+        <h2 style="font-size:30px;letter-spacing:-0.03em;margin:0 0 22px">{{ t.a_lock }}</h2>
+        <div class="field"><label>{{ t.a_pass }}</label><input class="input" type="password" value="{{ passInput }}" onChange="{{ onPass }}" onKeyDown="{{ onPassKey }}"></div>
+        <button class="btn btn-primary btn-block" onClick="{{ unlock }}">{{ t.a_enter }}</button>
+        <div style="font-size:13px;color:#D49286;margin-top:10px;min-height:18px">{{ passErr }}</div>
+        <div style="height:2px;background:var(--color-divider);margin:22px 0"></div>
+        <a href="#/" style="font-size:13px">{{ t.a_back }}</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ unlocked }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <header class="nav no-print" style="position:sticky;top:0;z-index:30;background:var(--color-bg);flex-wrap:wrap;gap:10px 14px">
+        <div class="nav-brand" style="margin-right:0;white-space:nowrap;font-size:16px">{{ brandName }} <span style="color:var(--color-accent)">/ {{ t.a_title }}</span></div>
+        <div style="display:flex;align-items:center;gap:8px;flex:none">
+          <button class="btn btn-secondary btn-icon" onClick="{{ aPrev }}">‹</button>
+          <button class="btn btn-secondary" onClick="{{ aToday }}">{{ t.a_today }}</button>
+          <button class="btn btn-secondary btn-icon" onClick="{{ aNext }}">›</button>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:15px;margin-left:8px;white-space:nowrap">{{ aRangeLabel }}</div>
+        </div>
+        <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;margin-left:auto;flex:none">
+          <sc-for list="{{ views }}" as="v" hint-placeholder-count="3">
+            <button onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.l }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden">
+          <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+            <button onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.code }}</button>
+          </sc-for>
+        </div>
+        <button class="btn btn-secondary" onClick="{{ lock }}">{{ t.a_out }}</button>
+      </header>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);align-items:start">
+
+        <main style="padding:24px 28px;min-height:70vh">
+
+          <sc-if value="{{ isDayView }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                <h3 style="margin:0;font-size:24px;letter-spacing:-0.02em">{{ aDayLabel }}</h3>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span class="text-muted" style="font-size:12px">{{ aDaySummary }}</span>
+                  <button class="btn btn-secondary no-print" style="white-space:nowrap" onClick="{{ copyDay }}">{{ copyLabel }}</button>
+                  <button class="btn btn-secondary no-print" style="white-space:nowrap" onClick="{{ printDay }}">{{ t.a_print }}</button>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;border-top:2px solid var(--color-divider)">
+                <sc-for list="{{ dayRows }}" as="r" hint-placeholder-count="8">
+                  <div style="{{ r.style }}">
+                    <div style="width:104px;flex:none;font-family:var(--font-heading);font-weight:800;font-variant-numeric:tabular-nums;font-size:14px">{{ r.time }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:15px;font-family:var(--font-heading);font-weight:800">{{ r.title }}</div>
+                      <div class="text-muted" style="font-size:12px">{{ r.sub }}</div>
+                      <div class="text-muted" style="font-size:12px">{{ r.note }}</div>
+                    </div>
+                    <div style="flex:none;display:flex;align-items:center;gap:8px">
+                      <span class="{{ r.tagCls }}">{{ r.status }}</span>
+                      <sc-if value="{{ r.canConfirm }}" hint-placeholder-val="{{ false }}">
+                        <button class="btn btn-primary no-print" onClick="{{ r.confirm }}">{{ t.a_confirm }}</button>
+                      </sc-if>
+                      <sc-if value="{{ r.canDecline }}" hint-placeholder-val="{{ false }}">
+                        <button class="btn btn-secondary no-print" onClick="{{ r.decline }}">{{ t.a_decline }}</button>
+                      </sc-if>
+                      <button class="btn btn-ghost no-print" onClick="{{ r.remove }}">×</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ dayEmpty }}" hint-placeholder-val="{{ false }}">
+                <p class="text-muted" style="padding:24px 0;margin:0">{{ t.a_none }}</p>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isWeekView }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:56px repeat(7,minmax(0,1fr));border-bottom:2px solid var(--color-divider)">
+                <div></div>
+                <sc-for list="{{ weekHeads }}" as="h" hint-placeholder-count="7">
+                  <div onClick="{{ h.pick }}" style="{{ h.style }}">
+                    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase">{{ h.dow }}</div>
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:18px">{{ h.n }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:56px repeat(7,minmax(0,1fr))">
+                <div style="{{ weekAxisStyle }}">
+                  <sc-for list="{{ weekHours }}" as="h" hint-placeholder-count="10">
+                    <div style="{{ h.style }}">{{ h.l }}</div>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ weekCols }}" as="c" hint-placeholder-count="7">
+                  <div style="{{ c.style }}">
+                    <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="2">
+                      <div onClick="{{ i.open }}" style="{{ i.style }}">
+                        <div style="font-size:11px;font-family:var(--font-heading);font-weight:800">{{ i.time }}</div>
+                        <div style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ i.title }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMonthView }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:2px">
+                <sc-for list="{{ dowShort }}" as="d" hint-placeholder-count="7">
+                  <div class="text-muted" style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 6px">{{ d.l }}</div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">
+                <sc-for list="{{ monthCells }}" as="c" hint-placeholder-count="42">
+                  <div onClick="{{ c.pick }}" style="{{ c.style }}">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                      <span style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ c.n }}</span>
+                      <span style="font-size:10px" class="text-muted">{{ c.badge }}</span>
+                    </div>
+                    <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="0">
+                      <div style="{{ i.style }}">{{ i.l }}</div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </main>
+
+        <aside class="no-print" style="border-left:2px solid var(--color-divider);min-height:70vh;padding:24px 22px;position:sticky;top:61px">
+          <div style="display:flex;flex-wrap:wrap;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;margin-bottom:20px">
+            <sc-for list="{{ panels }}" as="p" hint-placeholder-count="5">
+              <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.l }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ panelRequests }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:20px">
+                <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+                  <div style="background:var(--color-surface);padding:12px">
+                    <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent)">{{ s.k }}</div>
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:22px;line-height:1.2">{{ s.v }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px">{{ t.a_new }} {{ pendingCount }}</div>
+              <sc-for list="{{ pending }}" as="p" hint-placeholder-count="2">
+                <div style="border-top:1px solid var(--color-divider);padding:12px 0">
+                  <div style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ p.name }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ p.when }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ p.svc }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ p.contact }}</div>
+                  <div style="display:flex;gap:6px;margin-top:8px">
+                    <button class="btn btn-primary" onClick="{{ p.confirm }}">{{ t.a_confirm }}</button>
+                    <button class="btn btn-secondary" onClick="{{ p.decline }}">{{ t.a_decline }}</button>
+                    <button class="btn btn-ghost" onClick="{{ p.goto }}">{{ t.a_open }}</button>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+                <p class="text-muted" style="font-size:13px;margin:0">{{ t.a_nopending }}</p>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ panelAdd }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px">{{ t.a_walkin }} — {{ aDayShort }}</div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.f_name }}</label><input class="input" value="{{ nb.name }}" onChange="{{ nb.onName }}"></div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.f_phone }}</label><input class="input" value="{{ nb.phone }}" onChange="{{ nb.onPhone }}"></div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.th_service }}</label>
+                <select class="input" value="{{ nb.svc }}" onChange="{{ nb.onSvc }}">
+                  <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+                    <option value="{{ s.id }}">{{ s.optLabel }}</option>
+                  </sc-for>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.step4 }}</label>
+                <select class="input" value="{{ nb.time }}" onChange="{{ nb.onTime }}">
+                  <sc-for list="{{ nbSlots }}" as="s" hint-placeholder-count="8">
+                    <option value="{{ s.t }}">{{ s.label }}</option>
+                  </sc-for>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-block" onClick="{{ addWalkin }}">{{ t.a_add }}</button>
+              <div style="font-size:12px;color:#D49286;margin-top:8px">{{ nbErr }}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ panelBlock }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px">{{ t.a_block }}</div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.a_date }}</label><input class="input" type="date" value="{{ bl.date }}" onChange="{{ bl.onDate }}"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field"><label>{{ t.a_from }}</label><input class="input" type="time" value="{{ bl.from }}" onChange="{{ bl.onFrom }}"></div>
+                <div class="field"><label>{{ t.a_to }}</label><input class="input" type="time" value="{{ bl.to }}" onChange="{{ bl.onTo }}"></div>
+              </div>
+              <div class="field" style="margin:10px 0"><label>{{ t.a_reason }}</label><input class="input" value="{{ bl.reason }}" onChange="{{ bl.onReason }}" placeholder="{{ t.a_reason_ph }}"></div>
+              <button class="btn btn-primary btn-block" onClick="{{ addBlock }}">{{ t.a_add }}</button>
+              <button class="btn btn-secondary btn-block" onClick="{{ blockWholeDay }}">{{ t.a_wholeday }}</button>
+              <div style="height:2px;background:var(--color-divider);margin:18px 0"></div>
+              <sc-for list="{{ blockList }}" as="b" hint-placeholder-count="0">
+                <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--color-divider);padding:9px 0;font-size:13px">
+                  <span>{{ b.l }}</span>
+                  <button class="btn btn-ghost" onClick="{{ b.remove }}">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ panelClients }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div class="field" style="margin-bottom:14px"><label>{{ t.a_search }}</label><input class="input" value="{{ clientQ }}" onChange="{{ onClientQ }}" placeholder="{{ t.a_search_ph }}"></div>
+              <sc-for list="{{ clients }}" as="c" hint-placeholder-count="3">
+                <div onClick="{{ c.open }}" style="{{ c.style }}">
+                  <div style="display:flex;justify-content:space-between;gap:8px">
+                    <span style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ c.name }}</span>
+                    <span class="text-muted" style="font-size:12px">{{ c.visits }}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:12px">{{ c.phone }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ c.last }}</div>
+                  <sc-for list="{{ c.history }}" as="h" hint-placeholder-count="0">
+                    <div style="font-size:12px;padding:4px 0 0;border-top:1px solid var(--color-divider);margin-top:6px">{{ h.l }}</div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ panelSettings }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px">{{ t.a_hours }}</div>
+              <sc-for list="{{ hourEdits }}" as="h" hint-placeholder-count="7">
+                <div style="display:grid;grid-template-columns:56px 1fr 1fr 22px;gap:6px;align-items:center;padding:5px 0;border-top:1px solid var(--color-divider)">
+                  <span style="font-size:12px">{{ h.dow }}</span>
+                  <input class="input" type="time" style="min-height:30px;font-size:12px" value="{{ h.open }}" onChange="{{ h.onOpen }}" disabled="{{ h.closed }}">
+                  <input class="input" type="time" style="min-height:30px;font-size:12px" value="{{ h.close }}" onChange="{{ h.onClose }}" disabled="{{ h.closed }}">
+                  <button onClick="{{ h.toggle }}" style="{{ h.toggleStyle }}">{{ h.mark }}</button>
+                </div>
+              </sc-for>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin:20px 0 10px">{{ t.a_step }}</div>
+              <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;width:max-content">
+                <sc-for list="{{ stepOpts }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.l }}</button>
+                </sc-for>
+              </div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin:20px 0 10px">{{ t.a_lead }}</div>
+              <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;width:max-content">
+                <sc-for list="{{ leadOpts }}" as="s" hint-placeholder-count="4">
+                  <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.l }}</button>
+                </sc-for>
+              </div>
+              <div style="height:2px;background:var(--color-divider);margin:22px 0"></div>
+              <p class="text-muted" style="font-size:12px">{{ t.a_datanote }}</p>
+              <button class="btn btn-secondary btn-block" onClick="{{ exportJson }}">{{ t.a_export }}</button>
+              <a href="#/" style="display:inline-block;margin-top:16px;font-size:13px">{{ t.a_back }}</a>
+            </div>
+          </sc-if>
+        </aside>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<div data-screen-label="Public site" style="background-color: #FFFFFF">
+
+  <header class="nav no-print" style="position:sticky;top:0;z-index:30;background:var(--color-bg);padding-left:clamp(16px,4.5vw,32px);padding-right:clamp(16px,4.5vw,32px)">
+    <div class="nav-brand" style="letter-spacing:-0.02em;white-space:nowrap;flex:none">{{ brandName }}</div>
+    
+    <nav style="align-items: center; position: static">
+      <a href="#services">{{ t.nav_services }}</a>
+      <a href="#book">{{ t.nav_book }}</a>
+      <a href="#work">{{ t.nav_work }}</a>
+      <a href="#studio">{{ t.nav_studio }}</a>
+      <a href="#contact">{{ t.nav_contact }}</a>
+    </nav><div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;flex:none">
+      <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+        <button onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.code }}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="Hero" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,72px) clamp(16px,4.5vw,32px) clamp(36px,6vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:48px 56px;align-items:end">
+    <div>
+      
+      <div style="font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 24px; max-width: 100%; position: static">{{ t.hero_kicker }}</div><h1 style="font-size:clamp(38px,5.6vw,72px);line-height:1.02;letter-spacing:-0.035em;margin:0 0 22px;max-width:15ch">{{ t.hero_title }}</h1>
+      <p style="font-size:17px;line-height:1.55;max-width:44ch;margin:0 0 30px;text-wrap:pretty">{{ t.hero_lead }}</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="#book" style="padding: 12px 20px; font-size: 15px; white-space: nowrap; border-radius: 5px">{{ t.hero_cta }}</a>
+        <a class="btn btn-secondary" href="#services" style="padding: 12px 20px; font-size: 15px; white-space: nowrap; border-radius: 5px">{{ t.hero_cta2 }}</a>
+      </div>
+    </div>
+    <div style="position:relative;width:100%;aspect-ratio:4/5;min-height:280px">
+      <image-slot id="ns-hero" shape="rounded" radius="5" placeholder="Hero photo — hands, close, daylight" style="position: static; border-radius: 5px"></image-slot>
+    </div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+  <section id="services" data-screen-label="Services" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px)">
+    
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:40px 48px;align-items:start">
+      <div>
+        <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0 0 14px">{{ t.sec_services }}</h2>
+        <p class="text-muted" style="font-size: 14px; max-width: 39ch; margin: 0; position: static">{{ t.services_note }}</p>
+      </div>
+      <div>
+      <table class="table" style="min-width:0">
+        <thead>
+          <tr>
+            <th style="width:56%">{{ t.th_service }}</th>
+            <th>{{ t.th_time }}</th>
+            <th>{{ t.th_price }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+            <tr onClick="{{ s.rowPick }}" style="cursor:pointer" style-hover="background:var(--color-accent-100)" title="{{ t.book_short }}">
+              <td style="padding:16px 8px">
+                <div style="font-family:var(--font-heading);font-weight:800;font-size:16px;line-height:1.2">{{ s.name }}</div>
+                <div class="text-muted" style="font-size:13px;margin-top:4px">{{ s.desc }}</div>
+              </td>
+              <td style="padding:16px 8px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.durLabel }}</td>
+              <td style="padding:16px 8px;font-family:var(--font-heading);font-weight:800;font-variant-numeric:tabular-nums">{{ s.priceLabel }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      </div>
+    </div></section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section id="book" data-screen-label="Booking" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px)">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:24px;flex-wrap:wrap;margin-bottom:8px">
+      <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0">{{ t.sec_book }}</h2>
+      <p class="text-muted" style="font-size:14px;max-width:46ch;margin:0">{{ t.book_lead }}</p>
+    </div>
+    <div style="height:2px;background:var(--color-divider);margin:24px 0 32px"></div>
+
+    <sc-if value="{{ booked }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px 48px;align-items:start">
+        <div>
+          <h3 style="font-size:28px;margin:0 0 12px">{{ t.conf_title }}</h3>
+          <p style="font-size:16px;max-width:40ch">{{ t.conf_lead }}</p>
+          <button class="btn btn-secondary" onClick="{{ resetBooking }}">{{ t.conf_new }}</button>
+        </div>
+        <div style="background:var(--color-surface);padding:24px">
+          <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent);margin-bottom:16px">{{ t.conf_ref }} {{ bookedRef }}</div>
+          <sc-for list="{{ bookedRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--color-divider);font-size:14px">
+              <span class="text-muted">{{ r.k }}</span>
+              <span style="text-align:right;font-family:var(--font-heading);font-weight:800">{{ r.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ notBooked }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:48px;align-items:start">
+
+        <div>
+          <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 14px; font-weight: 700">{{ t.step1 }}</div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+              <button onClick="{{ s.pick }}" style="{{ s.rowStyle }}">
+                <span style="{{ s.markStyle }}"></span>
+                <span style="flex:1;text-align:left;font-family:var(--font-heading);font-weight:800;font-size:14px">{{ s.name }}</span>
+                <span class="text-muted" style="font-size:13px;font-variant-numeric:tabular-nums">{{ s.durLabel }}</span>
+                <span style="font-size:14px;font-family:var(--font-heading);font-weight:800;font-variant-numeric:tabular-nums;min-width:44px;text-align:right">{{ s.priceLabel }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); margin: 32px 0 14px; font-weight: 700">{{ t.step3 }}</div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,190px),1fr)); gap: 14px; border-radius: 5px">
+            <div class="field"><label>{{ t.f_name }}</label><input class="input" value="{{ f.name }}" onChange="{{ f.onName }}" placeholder="{{ t.ph_name }}" style="border-radius: 5px"></div>
+            <div class="field"><label>{{ t.f_phone }}</label><input class="input" value="{{ f.phone }}" onChange="{{ f.onPhone }}" placeholder="+371 20 000 000" style="border-radius: 5px"></div>
+            <div class="field"><label>{{ t.f_email }}</label><input class="input" value="{{ f.email }}" onChange="{{ f.onEmail }}" placeholder="vards@epasts.lv" style="border-radius: 5px"></div>
+            <div class="field"><label>{{ t.f_ig }}</label><input class="input" value="{{ f.ig }}" onChange="{{ f.onIg }}" placeholder="@" style="border-radius: 5px"></div>
+            <div class="field" style="grid-column:1/-1"><label>{{ t.f_note }}</label><textarea class="input" style="min-height: 76px; border-radius: 5px" value="{{ f.note }}" onChange="{{ f.onNote }}" placeholder="{{ t.ph_note }}"></textarea></div>
+          </div>
+          <label class="radio" style="margin-top:14px" onClick="{{ f.toggleFirst }}">
+            <span class="dot" style="{{ f.firstStyle }}"></span>
+            <span>{{ t.f_first }}</span>
+          </label>
+
+          <div style="margin-top:22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <button class="btn btn-primary" style="padding: 12px 20px; font-size: 15px; white-space: nowrap; color: var(--color-neutral-900)" onClick="{{ submit }}">{{ t.submit }}</button>
+            <span style="font-size:13px;color:#D49286">{{ bookErr }}</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); font-weight: 700">{{ t.step2 }}</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="btn btn-secondary btn-icon" onClick="{{ prevMonth }}" style="border-radius: 5px">‹</button>
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:15px;min-width:150px;text-align:center">{{ bookMonthLabel }}</div>
+              <button class="btn btn-secondary btn-icon" onClick="{{ nextMonth }}" style="border-radius: 5px">›</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:6px">
+            <sc-for list="{{ dowShort }}" as="d" hint-placeholder-count="7">
+              <div class="text-muted" style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;text-align:center;padding:4px 0">{{ d.l }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">
+            <sc-for list="{{ bookDays }}" as="d" hint-placeholder-count="42">
+              <button onClick="{{ d.pick }}" style="{{ d.style }}">{{ d.n }}</button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:18px;margin-top:12px;font-size:11px" class="text-muted">
+            <sc-for list="{{ legend }}" as="g" hint-placeholder-count="3">
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="{{ g.style }}"></span>{{ g.l }}</span>
+            </sc-for>
+          </div>
+
+          <div style="height:2px;background:var(--color-divider);margin:24px 0"></div>
+
+          <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 14px; font-weight: 700">{{ t.step4 }} {{ selDateLabel }}</div>
+          <sc-if value="{{ hasSlots }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px">
+              <sc-for list="{{ slots }}" as="s" hint-placeholder-count="12">
+                <button class="{{ s.cls }}" style="justify-content: center; font-variant-numeric: tabular-nums; border-radius: 5px" onClick="{{ s.pick }}">{{ s.t }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noSlots }}" hint-placeholder-val="{{ false }}">
+            <p class="text-muted" style="font-size:14px;margin:0">{{ slotsMsg }}</p>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section id="work" data-screen-label="Gallery" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:28px">
+      <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0">{{ t.sec_work }}</h2>
+      <div style="display:flex;align-items:center;gap:14px">
+        <a href="{{ igUrl }}" style="font-size: 14px; font-weight: 400">{{ igHandle }}</a>
+        <span class="text-muted" style="font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ galleryCount }}</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-icon" style="border-radius:5px" onClick="{{ galleryPrev }}" disabled="{{ atStart }}">‹</button>
+          <button class="btn btn-secondary btn-icon" style="border-radius:5px" onClick="{{ galleryNext }}" disabled="{{ atEnd }}">›</button>
+        </div>
+      </div>
+    </div>
+    <div onTouchStart="{{ swipeStart }}" onTouchMove="{{ swipeMove }}" onTouchEnd="{{ swipeEnd }}" style="overflow:hidden;touch-action:pan-y">
+      <div style="display:flex;gap:12px">
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g1" shape="rounded" radius="5" placeholder="Work 01"></image-slot></div>
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g2" shape="rounded" radius="5" placeholder="Work 02"></image-slot></div>
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g3" shape="rounded" radius="5" placeholder="Work 03"></image-slot></div>
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g4" shape="rounded" radius="5" placeholder="Work 04"></image-slot></div>
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g5" shape="rounded" radius="5" placeholder="Work 05"></image-slot></div>
+      <div onClick="{{ openGallery }}" style="position:relative;flex:0 0 calc((100% - 24px) / 3);aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:zoom-in"><image-slot id="ns-g6" shape="rounded" radius="5" placeholder="Work 06"></image-slot></div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section id="studio" data-screen-label="Studio" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:40px 56px;align-items:start">
+    <div>
+      <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0 0 6px">{{ t.sec_studio }}</h2>
+      <div class="text-muted" style="font-size:13px;margin-bottom:20px">{{ t.master_line }}</div>
+      <p style="font-size:16px;max-width:50ch;text-wrap:pretty">{{ t.studio_p1 }}</p>
+      <p style="font-size:16px;max-width:50ch;text-wrap:pretty">{{ t.studio_p2 }}</p>
+      <div style="height:2px;background:var(--color-divider);margin:28px 0"></div>
+      <div style="font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 18px; font-weight: 700">{{ t.sec_reviews }}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:2px">
+        <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
+          <div class="card" style="padding:18px">
+            <p style="font-size:14px;line-height:1.5;margin:0;flex:1">{{ r.q }}</p>
+            <div class="card-meta">{{ r.who }}</div>
+          </div>
+        </sc-for>
+        <button onClick="{{ openReviews }}" style="{{ moreTileStyle }}" style-hover="background:var(--color-accent-200)">
+          <span style="font-size:14px;line-height:1.5;font-family:var(--font-heading);font-weight:800">{{ t.rev_more }}</span>
+          <span style="font-size:12px;color:var(--color-accent-800)">{{ revCount }}</span>
+        </button>
+      </div>
+    </div><div onClick="{{ openSolo }}" style="position:relative;width:100%;aspect-ratio:3/4;min-height:260px;cursor:zoom-in">
+      
+    <image-slot id="ns-master" shape="rounded" radius="5" placeholder="Portrait of the master"></image-slot></div>
+    
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section data-screen-label="FAQ" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px 48px;align-items:start">
+    <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0">{{ t.sec_faq }}</h2>
+    <div>
+      <sc-for list="{{ faq }}" as="q" hint-placeholder-count="5">
+        <div style="border-top:1px solid var(--color-divider);padding:18px 0">
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:16px;margin-bottom:6px">{{ q.q }}</div>
+          <div class="text-muted" style="font-size:14px;max-width:60ch">{{ q.a }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section id="contact" data-screen-label="Contact" style="max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,64px) clamp(16px,4.5vw,32px)">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:40px 48px;align-items:start">
+      <div>
+        <h2 style="font-size:clamp(26px,6vw,34px);letter-spacing:-0.03em;margin:0 0 28px">{{ t.sec_contact }}</h2>
+        <sc-for list="{{ contactRows }}" as="c" hint-placeholder-count="4">
+          <div style="border-top:1px solid var(--color-divider);padding:14px 0">
+            <div style="font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 5px; font-weight: 700">{{ c.k }}</div>
+            <sc-if value="{{ c.isLink }}" hint-placeholder-val="{{ false }}">
+              <a href="{{ c.href }}" target="_blank" rel="noreferrer" style="font-size:16px">{{ c.v }}</a>
+            </sc-if>
+            <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:16px">{{ c.v }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <a class="btn btn-secondary" style="margin-top: 22px; border-radius: 5px" href="{{ mapUrl }}" target="_blank" rel="noreferrer">{{ t.open_maps }}</a>
+      </div>
+      <div>
+        <div style="position:relative;width:100%;aspect-ratio:16/10;min-height:240px;border-radius:5px;overflow:hidden;border:1px solid var(--color-divider)">
+          <iframe src="{{ mapEmbed }}" title="{{ t.sec_contact }}" loading="lazy" referrerPolicy="no-referrer-when-downgrade" style="position:absolute;inset:0;width:100%;height:100%;border:0;display:block"></iframe>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:2px;margin-top:2px">
+          <sc-for list="{{ hoursRows }}" as="h" hint-placeholder-count="7">
+            <div style="{{ h.style }}">
+              <span style="font-size: 12px">{{ h.d }}</span>
+              <span style="font-variant-numeric: tabular-nums; font-size: 12px">{{ h.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+  <footer style="max-width:1180px;margin:0 auto;padding:clamp(20px,5vw,32px) clamp(16px,4.5vw,32px);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font-size:12px" class="text-muted">
+    <span style="display:flex;gap:6px 14px;flex-wrap:wrap">
+      <sc-for list="{{ footerParts }}" as="p" hint-placeholder-count="3">
+        <span style="white-space:nowrap">{{ p.l }}</span>
+      </sc-for>
+    </span>
+    <span style="display:flex;gap:16px;align-items:center">
+      <a href="Admin.dc.html">{{ t.admin_link }}</a>
+      <sc-if value="{{ adminHere }}" hint-placeholder-val="{{ false }}">
+        <span class="tag tag-accent">{{ t.photo_edit }}</span>
+      </sc-if>
+      <span>{{ t.footer_note }}</span>
+    </span>
+  </footer>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;studioName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nail Studio&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Studio&quot;},&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lv&quot;,&quot;en&quot;,&quot;ru&quot;,&quot;auto&quot;],&quot;default&quot;:&quot;lv&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Studio&quot;},&quot;adminPasscode&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;777&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Booking&quot;},&quot;slotStep&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;15&quot;,&quot;30&quot;,&quot;60&quot;],&quot;default&quot;:&quot;30&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Booking&quot;}}">
+const NS = window.NailStore;
+const { KEY, AUTHKEY, LANGKEY, LOCALE, SERVICES, SVC, DEF_HOURS,
+  pad, iso, pISO, m2t, t2m, addD, monday, uid } = NS;
+
+const I18N = {
+  lv: {
+    nav_services: 'Pakalpojumi', nav_book: 'Pieteikties', nav_work: 'Darbi', nav_studio: 'Studija', nav_contact: 'Kontakti',
+    hero_kicker: 'Nagu studija — Rīga', hero_title: 'Precīzi nagi, pēc pulksteņa.',
+    hero_lead: 'Viena krēsla studija Rīgas centrā. Viens klients vienā reizē, pusstunda starp vizītēm, bez steigas.',
+    hero_cta: 'Izvēlēties laiku', hero_cta2: 'Cenas',
+    fact_hours: 'Darba laiks', fact_where: 'Kur', fact_reply: 'Atbilde',
+    fact_reply_v: 'Trīs stundu laikā, ar zvanu',
+    sec_services: 'Pakalpojumi', services_note: 'Cenā iekļauta forma, kutikulas kopšana un noslēgums. Sveša pārklājuma noņemšana +5 €.',
+    th_service: 'Pakalpojums', th_time: 'Ilgums', th_price: 'Cena', book_short: 'Pieteikties',
+    sec_book: 'Pieraksts', book_lead: 'Izvēlies pakalpojumu, brīvu laiku un atstāj telefonu. Apstiprinu tajā pašā dienā.',
+    step1: '1 — Pakalpojums', step2: '2 — Datums', step3: '3 — Tavi dati', step4: 'Brīvie laiki',
+    f_name: 'Vārds', f_phone: 'Telefons', f_email: 'E-pasts', f_ig: 'Instagram', f_note: 'Piezīmes meistarei', f_first: 'Pirmā reize šajā studijā',
+    ph_name: 'Vārds Uzvārds', ph_note: 'Iedvesma, alerģijas, viss, kas jāzina',
+    submit: 'Pieteikt šo laiku', err_form: 'Lūdzu, norādi vārdu un telefonu.', err_slot: 'Vispirms izvēlies pakalpojumu un laiku.',
+    conf_title: 'Pieteikts.', conf_lead: 'Laiks ir rezervēts. Apstiprināšu ar zvanu trīs stundu laikā.', conf_ref: 'Numurs', conf_new: 'Pieteikt vēl vienu laiku',
+    r_service: 'Pakalpojums', r_when: 'Laiks', r_price: 'Cena', r_name: 'Vārds', r_phone: 'Telefons',
+    closed: 'Slēgts', full: 'Aizņemts', free: 'Brīvs', no_slots: 'Šajā dienā nav brīvu laiku.', pick_date: 'Izvēlies datumu kalendārā.',
+    sec_work: 'Darbi', sec_studio: 'Studija', master_line: 'Anna Ozola — meistare kopš 2014. gada',
+    studio_p1: 'Strādāju viena kopš 2019. gada: viens krēsls, viens klients, sterili instrumenti slēgtos maisiņos un logs, ko var atvērt.',
+    studio_p2: 'Paņem līdzi bildi, ja tāda ir. Ja nav — izlemsim kopā pirmajās piecās minūtēs.',
+    sec_reviews: 'Atsauksmes', sec_faq: 'Biežākie jautājumi', sec_contact: 'Kontakti',
+    rev_more: 'Skatīt vairāk', rev_book: 'Atsauksmju grāmata', rev_all: 'atsauksmes',
+    rev_note: 'Atsauksmes atstātas pēc vizītes, publicētas ar klientu piekrišanu.',
+    open_maps: 'Atvērt kartē', footer_note: 'Pieraksts tiešsaistē · Rīga', admin_link: 'Admin', photo_edit: 'Foto rediģēšana ieslēgta',
+    a_title: 'Kalendārs', a_lock: 'Studijas piekļuve', a_pass: 'Kods', a_enter: 'Ienākt', a_wrong: 'Nepareizs kods.',
+    a_back: 'Atpakaļ uz vietni', a_out: 'Iziet', a_today: 'Šodien', a_day: 'Diena', a_week: 'Nedēļa', a_month: 'Mēnesis',
+    a_none: 'Šajā dienā nav pierakstu.', a_confirm: 'Apstiprināt', a_decline: 'Atteikt', a_open: 'Atvērt',
+    a_new: 'Jauni pieteikumi', a_nopending: 'Nav jaunu pieteikumu.', a_block: 'Bloķēt laiku', a_reason: 'Iemesls', a_reason_ph: 'Brīvdiena, pusdienas…',
+    a_from: 'No', a_to: 'Līdz', a_date: 'Datums', a_add: 'Pievienot', a_wholeday: 'Bloķēt visu dienu',
+    a_walkin: 'Pievienot pierakstu', a_search: 'Klienti', a_search_ph: 'Vārds vai telefons',
+    a_hours: 'Darba laiks', a_step: 'Laika solis', a_lead: 'Minimālais brīdinājums', a_print: 'Drukāt',
+    a_copy: 'Kopēt dienu', a_copied: 'Nokopēts', a_reset: 'Atiestatīt demo datus', a_export: 'Eksportēt JSON',
+    a_datanote: 'Dati glabājas šajā pārlūkā. Kad būs serveris, saglabāšanas vieta mainās vienā vietā koda iekšienē.',
+    a_req: 'Pieteikumi', a_set: 'Iestatījumi', a_cl: 'Klienti', a_bl: 'Bloki', a_ad: 'Jauns',
+    s_pending: 'Gaida', s_confirmed: 'Apstiprināts', s_declined: 'Atteikts', s_blocked: 'Bloķēts',
+    st_today: 'Šodien', st_week: 'Šonedēļ', st_pend: 'Gaida', st_income: 'Plānots',
+    a_free: 'brīvs', a_booked: 'aizņemts', a_visits: 'vizītes', a_last: 'Pēdējā', a_first_tag: 'Pirmā reize'
+  },
+  en: {
+    nav_services: 'Services', nav_book: 'Book', nav_work: 'Work', nav_studio: 'Studio', nav_contact: 'Contact',
+    hero_kicker: 'Nail studio — Rīga', hero_title: 'Precise nails, on the hour.',
+    hero_lead: 'A single-chair studio in central Rīga. One client at a time, half an hour between appointments, no rush.',
+    hero_cta: 'Pick a time', hero_cta2: 'See prices',
+    fact_hours: 'Hours', fact_where: 'Where', fact_reply: 'Reply',
+    fact_reply_v: 'Within three hours, by phone',
+    sec_services: 'Services', services_note: 'Prices include shaping, cuticle care and the finish. Removing another studio\u2019s gel adds €5.',
+    th_service: 'Service', th_time: 'Time', th_price: 'Price', book_short: 'Book',
+    sec_book: 'Booking', book_lead: 'Choose a service, pick a free time, leave a phone number. I confirm the same day.',
+    step1: '1 — Service', step2: '2 — Date', step3: '3 — Your details', step4: 'Free times',
+    f_name: 'Name', f_phone: 'Phone', f_email: 'Email', f_ig: 'Instagram', f_note: 'Notes for the master', f_first: 'First visit to the studio',
+    ph_name: 'First and last name', ph_note: 'Inspiration, allergies, anything I should know',
+    submit: 'Request this time', err_form: 'Please add a name and a phone number.', err_slot: 'Choose a service and a time first.',
+    conf_title: 'Requested.', conf_lead: 'Your time is held. I will confirm by phone within three hours.', conf_ref: 'Reference', conf_new: 'Book another time',
+    r_service: 'Service', r_when: 'When', r_price: 'Price', r_name: 'Name', r_phone: 'Phone',
+    closed: 'Closed', full: 'Full', free: 'Free', no_slots: 'No free times on this day.', pick_date: 'Pick a date in the calendar.',
+    sec_work: 'Work', sec_studio: 'The studio', master_line: 'Anna Ozola — nail technician since 2014',
+    studio_p1: 'I have worked alone since 2019: one chair, one client, sterilised tools in sealed pouches, and a window that opens.',
+    studio_p2: 'Bring a photo if you have one. If you do not, we will decide together in the first five minutes.',
+    sec_reviews: 'Reviews', sec_faq: 'Questions', sec_contact: 'Contact',
+    rev_more: 'See more', rev_book: 'Review book', rev_all: 'reviews',
+    rev_note: 'Left after a visit and published with the client\u2019s consent.',
+    open_maps: 'Open in maps', footer_note: 'Online booking · Rīga', admin_link: 'Admin', photo_edit: 'Photo editing on',
+    a_title: 'Calendar', a_lock: 'Studio access', a_pass: 'Passcode', a_enter: 'Enter', a_wrong: 'Wrong code.',
+    a_back: 'Back to the site', a_out: 'Sign out', a_today: 'Today', a_day: 'Day', a_week: 'Week', a_month: 'Month',
+    a_none: 'Nothing booked on this day.', a_confirm: 'Confirm', a_decline: 'Decline', a_open: 'Open',
+    a_new: 'New requests', a_nopending: 'No new requests.', a_block: 'Block time', a_reason: 'Reason', a_reason_ph: 'Holiday, lunch…',
+    a_from: 'From', a_to: 'To', a_date: 'Date', a_add: 'Add', a_wholeday: 'Block the whole day',
+    a_walkin: 'Add booking', a_search: 'Clients', a_search_ph: 'Name or phone',
+    a_hours: 'Working hours', a_step: 'Slot step', a_lead: 'Minimum notice', a_print: 'Print',
+    a_copy: 'Copy day', a_copied: 'Copied', a_reset: 'Reset demo data', a_export: 'Export JSON',
+    a_datanote: 'Data lives in this browser. When a server is wired up, only the storage layer changes.',
+    a_req: 'Requests', a_set: 'Settings', a_cl: 'Clients', a_bl: 'Blocks', a_ad: 'New',
+    s_pending: 'Pending', s_confirmed: 'Confirmed', s_declined: 'Declined', s_blocked: 'Blocked',
+    st_today: 'Today', st_week: 'This week', st_pend: 'Pending', st_income: 'Expected',
+    a_free: 'free', a_booked: 'booked', a_visits: 'visits', a_last: 'Last', a_first_tag: 'First visit'
+  },
+  ru: {
+    nav_services: 'Услуги', nav_book: 'Запись', nav_work: 'Работы', nav_studio: 'Студия', nav_contact: 'Контакты',
+    hero_kicker: 'Ногтевая студия — Рига', hero_title: 'Точные ногти, по часам.',
+    hero_lead: 'Студия на одно кресло в центре Риги. Один клиент за раз, полчаса между визитами, без спешки.',
+    hero_cta: 'Выбрать время', hero_cta2: 'Цены',
+    fact_hours: 'Часы работы', fact_where: 'Адрес', fact_reply: 'Ответ',
+    fact_reply_v: 'В течение трёх часов, звонком',
+    sec_services: 'Услуги', services_note: 'В цену входят форма, уход за кутикулой и финиш. Снятие чужого покрытия +5 €.',
+    th_service: 'Услуга', th_time: 'Время', th_price: 'Цена', book_short: 'Записаться',
+    sec_book: 'Запись', book_lead: 'Выберите услугу, свободное время и оставьте телефон. Подтверждаю в тот же день.',
+    step1: '1 — Услуга', step2: '2 — Дата', step3: '3 — Ваши данные', step4: 'Свободное время',
+    f_name: 'Имя', f_phone: 'Телефон', f_email: 'E-mail', f_ig: 'Instagram', f_note: 'Заметка мастеру', f_first: 'Первый визит в студию',
+    ph_name: 'Имя и фамилия', ph_note: 'Референсы, аллергии, всё, что важно знать',
+    submit: 'Запросить это время', err_form: 'Укажите имя и телефон.', err_slot: 'Сначала выберите услугу и время.',
+    conf_title: 'Заявка принята.', conf_lead: 'Время удержано. Подтвержу звонком в течение трёх часов.', conf_ref: 'Номер', conf_new: 'Записаться ещё раз',
+    r_service: 'Услуга', r_when: 'Когда', r_price: 'Цена', r_name: 'Имя', r_phone: 'Телефон',
+    closed: 'Закрыто', full: 'Занято', free: 'Свободно', no_slots: 'В этот день свободного времени нет.', pick_date: 'Выберите дату в календаре.',
+    sec_work: 'Работы', sec_studio: 'Студия', master_line: 'Анна Озола — мастер с 2014 года',
+    studio_p1: 'Работаю одна с 2019 года: одно кресло, один клиент, стерильные инструменты в запечатанных пакетах и окно, которое открывается.',
+    studio_p2: 'Возьмите фото, если оно есть. Если нет — решим вместе в первые пять минут.',
+    sec_reviews: 'Отзывы', sec_faq: 'Вопросы', sec_contact: 'Контакты',
+    rev_more: 'Смотреть все', rev_book: 'Книга отзывов', rev_all: 'отзывов',
+    rev_note: 'Оставлены после визита и опубликованы с согласия клиентов.',
+    open_maps: 'Открыть на карте', footer_note: 'Онлайн-запись · Рига', admin_link: 'Admin', photo_edit: 'Редактирование фото включено',
+    a_title: 'Календарь', a_lock: 'Доступ студии', a_pass: 'Код', a_enter: 'Войти', a_wrong: 'Неверный код.',
+    a_back: 'Вернуться на сайт', a_out: 'Выйти', a_today: 'Сегодня', a_day: 'День', a_week: 'Неделя', a_month: 'Месяц',
+    a_none: 'В этот день записей нет.', a_confirm: 'Подтвердить', a_decline: 'Отклонить', a_open: 'Открыть',
+    a_new: 'Новые заявки', a_nopending: 'Новых заявок нет.', a_block: 'Заблокировать время', a_reason: 'Причина', a_reason_ph: 'Выходной, обед…',
+    a_from: 'С', a_to: 'До', a_date: 'Дата', a_add: 'Добавить', a_wholeday: 'Заблокировать весь день',
+    a_walkin: 'Добавить запись', a_search: 'Клиенты', a_search_ph: 'Имя или телефон',
+    a_hours: 'Часы работы', a_step: 'Шаг записи', a_lead: 'Минимальный запас', a_print: 'Печать',
+    a_copy: 'Копировать день', a_copied: 'Скопировано', a_reset: 'Сбросить демо-данные', a_export: 'Экспорт JSON',
+    a_datanote: 'Данные хранятся в этом браузере. При подключении сервера меняется только слой хранения.',
+    a_req: 'Заявки', a_set: 'Настройки', a_cl: 'Клиенты', a_bl: 'Блоки', a_ad: 'Новая',
+    s_pending: 'Ожидает', s_confirmed: 'Подтверждено', s_declined: 'Отклонено', s_blocked: 'Заблокировано',
+    st_today: 'Сегодня', st_week: 'На неделе', st_pend: 'Ожидают', st_income: 'Ожидается',
+    a_free: 'свободно', a_booked: 'занято', a_visits: 'визитов', a_last: 'Последний', a_first_tag: 'Первый визит'
+  }
+};
+
+const REVIEWS = {
+  lv: [
+    ['Pirmo reizi nagi izturēja trīs nedēļas bez neviena atlūzuma.', 'Elīna, Rīga', '2026-08-22', 'gel'],
+    ['Klusa studija, precīzi laiki. Nekad nav gaidīts.', 'Marta', '2026-08-14', 'classic'],
+    ['Atnācu ar sabojātiem nagiem, aizgāju ar plānu.', 'Kristīne', '2026-07-30', 'fill'],
+    ['Forma tieši tāda, kā lūdzu. Neviens nags nav pārslīpēts.', 'Baiba', '2026-07-11', 'ext'],
+    ['Pieteicos vakarā, atbilde bija nākamajā rītā. Ērti.', 'Ilze, Teika', '2026-06-28', 'gel'],
+    ['Paņēmu līdzi bildi, un rezultāts izskatījās labāk par to.', 'Zane', '2026-06-09', 'art'],
+    ['Instrumenti tiek atvērti tavā priekšā. Man tas ir svarīgi.', 'Dace', '2026-05-24', 'classic'],
+    ['Korekcija ik pēc mēneša, jau otro gadu. Nekad nav vīlusies.', 'Anete', '2026-05-02', 'fill']
+  ],
+  en: [
+    ['First time my nails lasted three weeks without a single chip.', 'Elīna, Rīga', '2026-08-22', 'gel'],
+    ['A quiet studio and exact times. I have never waited.', 'Marta', '2026-08-14', 'classic'],
+    ['I came in with damaged nails and left with a plan.', 'Kristīne', '2026-07-30', 'fill'],
+    ['The shape is exactly what I asked for. Nothing over-filed.', 'Baiba', '2026-07-11', 'ext'],
+    ['I requested a time in the evening and had an answer by morning.', 'Ilze, Teika', '2026-06-28', 'gel'],
+    ['I brought a photo and the result looked better than it.', 'Zane', '2026-06-09', 'art'],
+    ['Tools are opened in front of you. That matters to me.', 'Dace', '2026-05-24', 'classic'],
+    ['A refill every month for two years now, never once disappointed.', 'Anete', '2026-05-02', 'fill']
+  ],
+  ru: [
+    ['Впервые ногти продержались три недели без единого скола.', 'Элина, Рига', '2026-08-22', 'gel'],
+    ['Тихая студия и точное время. Ни разу не ждала.', 'Марта', '2026-08-14', 'classic'],
+    ['Пришла с испорченными ногтями, ушла с планом.', 'Кристине', '2026-07-30', 'fill'],
+    ['Форма именно такая, как просила. Ничего не перепилено.', 'Байба', '2026-07-11', 'ext'],
+    ['Записалась вечером, ответ был утром. Удобно.', 'Илзе, Тейка', '2026-06-28', 'gel'],
+    ['Принесла фото, а получилось даже лучше.', 'Зане', '2026-06-09', 'art'],
+    ['Инструменты открывают при тебе. Для меня это важно.', 'Даце', '2026-05-24', 'classic'],
+    ['Коррекция раз в месяц, уже второй год. Ни разу не подвела.', 'Анете', '2026-05-02', 'fill']
+  ]
+};
+
+const FAQ = {
+  lv: [
+    ['Kā notiek apstiprināšana?', 'Pēc pieteikuma laiks tiek turēts. Es piezvanu vai uzrakstu trīs stundu laikā un apstiprinu.'],
+    ['Ko darīt, ja jāatceļ?', 'Atcel vismaz 12 stundas iepriekš. Pēc trešās novēlotās atcelšanas tiešsaistes pieraksts tiek slēgts.'],
+    ['Vai noņemat svešu pārklājumu?', 'Jā, +5 € un aptuveni 20 minūtes klāt pie izvēlētā pakalpojuma.'],
+    ['Kā var norēķināties?', 'Skaidrā naudā vai ar pārskaitījumu uz vietas. Kartes maksājumi drīzumā.'],
+    ['Grūtniecība, alerģijas?', 'Pastāsti pieteikuma piezīmēs — mainu materiālus un ventilāciju.']
+  ],
+  en: [
+    ['How is a booking confirmed?', 'The time is held as soon as you request it. I call or write within three hours to confirm.'],
+    ['What if I need to cancel?', 'Cancel at least 12 hours ahead. After a third late cancellation online booking is closed.'],
+    ['Do you remove gel from another salon?', 'Yes — €5 and about 20 extra minutes on top of the chosen service.'],
+    ['How can I pay?', 'Cash or bank transfer on the spot. Card payments coming soon.'],
+    ['Pregnancy, allergies?', 'Say so in the booking notes — I change the materials and the ventilation.']
+  ],
+  ru: [
+    ['Как подтверждается запись?', 'Время удерживается сразу. Я звоню или пишу в течение трёх часов и подтверждаю.'],
+    ['Что делать, если нужно отменить?', 'Отменяйте минимум за 12 часов. После третьей поздней отмены онлайн-запись закрывается.'],
+    ['Снимаете чужое покрытие?', 'Да — +5 € и около 20 минут дополнительно к выбранной услуге.'],
+    ['Как оплатить?', 'Наличными или переводом на месте. Оплата картой — скоро.'],
+    ['Беременность, аллергии?', 'Напишите в заметке к записи — меняю материалы и проветривание.']
+  ]
+};
+
+const ADDRESS = 'Vienības gatve 109, Rīga';
+const PHONE = '+371 28 162 459';
+const IG = '@tatiana.nails.lv';
+
+class Component extends DCLogic {
+  state = {
+    lang: 'lv', route: 'site', authed: false, passInput: '', passErr: '',
+    bookings: [], blocks: [], hours: DEF_HOURS.map(h => ({ ...h })), step: 30, lead: 3,
+    bSvc: '', bDate: '', bTime: '', bName: '', bPhone: '', bEmail: '', bIg: '', bNote: '', bFirst: false,
+    bErr: '', booked: null, bMonth: iso(new Date(new Date().getFullYear(), new Date().getMonth(), 1)),
+    aView: 'day', aDate: iso(new Date()), aPanel: 'requests',
+    nbName: '', nbPhone: '', nbSvc: 'gel', nbTime: '', nbErr: '',
+    blDate: iso(new Date()), blFrom: '13:00', blTo: '14:00', blReason: '',
+    clientQ: '', clientOpen: '', copied: false, lbList: [], lbI: 0, adminHere: false, shots: 6, gIdx: 0, revOpen: false
+  };
+
+  slotSrc(host) {
+    if (!host || !host.shadowRoot || !host.hasAttribute('data-filled')) return '';
+    const imgs = [].slice.call(host.shadowRoot.querySelectorAll('img'));
+    const hit = imgs.filter(i => i.src && !i.classList.contains('ghost'))[0];
+    return hit ? hit.src : '';
+  }
+  openLB(e, scope) {
+    if (this._swiped) return;
+    const path = e.nativeEvent && e.nativeEvent.composedPath ? e.nativeEvent.composedPath() : [];
+    const t0 = path[0];
+    if (t0 && t0.closest && (t0.closest('[data-act]') || t0.closest('.ctl') || t0.closest('.credit'))) return;
+    const host = e.currentTarget.querySelector('image-slot');
+    if (host && (host.hasAttribute('data-reframe') || host.hasAttribute('data-panning'))) return;
+    const src = this.slotSrc(host);
+    if (!src) return;
+    if (scope) {
+      const all = [].slice.call(document.querySelectorAll(scope + ' image-slot'));
+      const list = [], hosts = [];
+      all.forEach(h => { const s = this.slotSrc(h); if (s) { list.push(s); hosts.push(h); } });
+      this.setState({ lbList: list, lbI: Math.max(0, hosts.indexOf(host)) });
+    } else {
+      this.setState({ lbList: [src], lbI: 0 });
+    }
+  }
+
+  componentDidMount() {
+    let s = {};
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) s = JSON.parse(raw);
+      const lang = localStorage.getItem(LANGKEY);
+      if (I18N[lang]) s.lang = lang;
+      else localStorage.removeItem(LANGKEY);
+      s.authed = false;
+    } catch (e) { /* private mode */ }
+    if (!Array.isArray(s.bookings)) s.bookings = [];
+    if (!Array.isArray(s.blocks)) s.blocks = [];
+    if (!I18N[s.lang]) {
+      const p = this.props.defaultLang;
+      s.lang = p === 'auto' ? this.detect() : (I18N[p] ? p : 'lv');
+    }
+    const merged = {};
+    ['bookings', 'blocks', 'hours', 'step', 'lead', 'lang', 'authed'].forEach(k => { merged[k] = (k in s) ? s[k] : this.state[k]; });
+    this.setState(s);
+    this.write(merged);
+    NS.pull(d => this.setState({
+      bookings: d.bookings, blocks: d.blocks, hours: d.hours, step: d.step, lead: d.lead
+    }));
+    this.syncRoute();
+    this._h = () => this.syncRoute();
+    window.addEventListener('hashchange', this._h);
+    this._k = e => {
+      if (!this.state.lbList.length && !this.state.revOpen) return;
+      if (e.key === 'Escape') this.setState({ lbList: [], lbI: 0, revOpen: false });
+      if (this.state.revOpen) return;
+      if (e.key === 'ArrowRight') this.setState(s => ({ lbI: (s.lbI + 1) % s.lbList.length }));
+      if (e.key === 'ArrowLeft') this.setState(s => ({ lbI: (s.lbI - 1 + s.lbList.length) % s.lbList.length }));
+    };
+    window.addEventListener('keydown', this._k);
+    this.applyGuard();
+    this._g = () => this.applyGuard();
+    window.addEventListener('storage', this._g);
+    window.addEventListener('focus', this._g);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('hashchange', this._h);
+    window.removeEventListener('keydown', this._k);
+    window.removeEventListener('storage', this._g);
+    window.removeEventListener('focus', this._g);
+    if (this._mo) this._mo.disconnect();
+  }
+
+  /* Photos are droppable only while the master is signed into the admin.
+     Guests get click-to-view and no drop target. */
+  applyGuard() {
+    let admin = false;
+    try { admin = localStorage.getItem(AUTHKEY) === '1'; } catch (e) { }
+    this._guest = !admin;
+    if (document.body) document.body.toggleAttribute('data-guest', this._guest);
+    this.hideEmptySlots();
+    if (!this._mo && window.MutationObserver && document.body) {
+      // data-filled lands asynchronously once a stored photo decodes
+      this._mo = new MutationObserver(() => this.hideEmptySlots());
+      this._mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-filled'] });
+    }
+    if (admin !== this.state.adminHere) this.setState({ adminHere: admin });
+  }
+  /* Cell visibility is the only geometry lever the editor preview honours, so
+     the gallery pages three-at-a-time by showing a window of cells. */
+  hideEmptySlots() {
+    const guest = this._guest;
+    const gallery = [];
+    [].forEach.call(document.querySelectorAll('image-slot'), s => {
+      const w = s.parentElement;
+      if (!w) return;
+      const filled = s.hasAttribute('data-filled');
+      const isShot = String(s.id).indexOf('ns-g') === 0;
+      if (isShot) {
+        if (filled || !guest) gallery.push(w);
+        else if (w.style.display !== 'none') w.style.display = 'none';
+        return;
+      }
+      const want = guest && !filled ? 'none' : '';
+      if (w.style.display !== want) w.style.display = want;
+    });
+    const shots = gallery.length;
+    const gi = Math.min(Math.max(0, this.state.gIdx), Math.max(0, shots - 3));
+    gallery.forEach((w, i) => {
+      const want = i >= gi && i < gi + 3 ? '' : 'none';
+      if (w.style.display !== want) w.style.display = want;
+    });
+    if (shots !== this.state.shots || gi !== this.state.gIdx) {
+      this.setState({ shots: shots, gIdx: gi });
+    }
+  }
+  /* The gallery offset is applied imperatively: a style hole would commit a
+     render behind, and a pixel offset beats a % of the track's own width. */
+  /* Offset is derived in renderVals from gIdx alone — one render, one truth,
+     so the strip and the counter can never disagree. */
+  /* Horizontal swipe pages the gallery on touch devices; a swipe must not also
+     fire the tap-to-enlarge click, hence the short-lived _swiped guard. */
+  onSwipeStart(e) {
+    const p = e.touches && e.touches[0];
+    if (!p) return;
+    this._sw = { x: p.clientX, y: p.clientY, dx: 0, dy: 0 };
+  }
+  onSwipeMove(e) {
+    const p = e.touches && e.touches[0];
+    if (!p || !this._sw) return;
+    this._sw.dx = p.clientX - this._sw.x;
+    this._sw.dy = p.clientY - this._sw.y;
+  }
+  onSwipeEnd() {
+    const s = this._sw;
+    this._sw = null;
+    if (!s || Math.abs(s.dx) < 40 || Math.abs(s.dx) < Math.abs(s.dy)) return;
+    this._swiped = true;
+    setTimeout(() => { this._swiped = false; }, 500);
+    const gi = Math.min(Math.max(0, this.state.gIdx), Math.max(0, this.state.shots - 3));
+    this.slideTo(s.dx < 0 ? gi + 1 : gi - 1);
+  }
+  slideTo(n) {
+    this.setState({ gIdx: Math.min(Math.max(0, n), Math.max(0, this.state.shots - 3)) });
+  }
+  componentDidUpdate() { if (this._guest !== undefined) this.hideEmptySlots(); }
+
+  detect() { const l = (navigator.language || 'lv').slice(0, 2); return I18N[l] ? l : 'lv'; }
+  syncRoute() {
+    const h = String(location.hash || '');
+    this.setState({ route: h.indexOf('admin') > -1 ? 'admin' : 'site' });
+  }
+  write(s) {
+    if (!s || !Array.isArray(s.bookings)) return;
+    this.mem = s;
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ bookings: s.bookings, blocks: s.blocks || [], hours: s.hours, step: s.step, lead: s.lead }));
+      if (I18N[s.lang]) localStorage.setItem(LANGKEY, s.lang);
+    } catch (e) { /* ignore */ }
+  }
+  save(patch) {
+    const keys = ['bookings', 'blocks', 'hours', 'step', 'lead', 'lang', 'authed'];
+    const next = {};
+    keys.forEach(k => { next[k] = (this.mem && k in this.mem) ? this.mem[k] : this.state[k]; });
+    keys.forEach(k => { if (k in patch) next[k] = patch[k]; });
+    this.setState(patch);
+    this.write(next);
+  }
+
+  hoursFor(dateISO) { const h = this.state.hours[pISO(dateISO).getDay()]; return h && !h.closed ? h : null; }
+  busy(dateISO) {
+    const r = [];
+    this.state.bookings.forEach(b => { if (b.date === dateISO && b.status !== 'declined') r.push([t2m(b.time), t2m(b.time) + SVC(b.svc).min, b]); });
+    this.state.blocks.forEach(b => { if (b.date === dateISO) r.push([t2m(b.from), t2m(b.to), b]); });
+    return r.sort((a, b) => a[0] - b[0]);
+  }
+  slotsFor(dateISO, dur, ignoreLead) {
+    const h = this.hoursFor(dateISO); if (!h) return [];
+    const busy = this.busy(dateISO), out = [];
+    const now = new Date();
+    const minStart = ignoreLead ? -1 : (dateISO === iso(now) ? now.getHours() * 60 + now.getMinutes() + this.state.lead * 60 : (pISO(dateISO) < new Date(now.getFullYear(), now.getMonth(), now.getDate()) ? 1e9 : -1));
+    const step = Number(this.props.slotStep || this.state.step) || 30;
+    for (let s = t2m(h.o); s + dur <= t2m(h.c); s += step) {
+      if (s < minStart) continue;
+      let ok = true;
+      for (let i = 0; i < busy.length; i++) if (s < busy[i][1] && s + dur > busy[i][0]) { ok = false; break; }
+      if (ok) out.push(m2t(s));
+    }
+    return out;
+  }
+
+  setSvc(id) { const cur = this.state.bTime, keep = cur && this.slotsFor(this.state.bDate, SVC(id).min).indexOf(cur) > -1; this.setState({ bSvc: id, bTime: keep ? cur : '' }); }
+  submit() {
+    const s = this.state;
+    if (!s.bSvc || !s.bDate || !s.bTime) { this.setState({ bErr: I18N[s.lang].err_slot }); return; }
+    if (!s.bName.trim() || !s.bPhone.trim()) { this.setState({ bErr: I18N[s.lang].err_form }); return; }
+    const ref = 'NS-' + String(4830 + s.bookings.length).slice(0, 4);
+    const b = { id: uid(), ref: ref, date: s.bDate, time: s.bTime, svc: s.bSvc, name: s.bName.trim(), phone: s.bPhone.trim(), email: s.bEmail.trim(), ig: s.bIg.trim(), note: s.bNote.trim(), first: s.bFirst, status: 'pending', made: Date.now() };
+    this.save({ bookings: s.bookings.concat([b]), booked: b, bErr: '' });
+    // the visitor's own row goes straight to the database, so the studio sees it
+    NS.insertBooking(b);
+  }
+  resetBooking() { this.setState({ booked: null, bTime: '', bName: '', bPhone: '', bEmail: '', bIg: '', bNote: '', bFirst: false, bErr: '' }); }
+  setStatus(id, st) { this.save({ bookings: this.state.bookings.map(b => b.id === id ? { ...b, status: st } : b) }); }
+  del(id) { this.save({ bookings: this.state.bookings.filter(b => b.id !== id) }); }
+
+  fmt(dateISO, opts) { return new Intl.DateTimeFormat(LOCALE[this.state.lang], opts).format(pISO(dateISO)); }
+
+  monthCellsFor(monthISO) {
+    const f = pISO(monthISO), y = f.getFullYear(), m = f.getMonth(), off = (new Date(y, m, 1).getDay() + 6) % 7, out = [];
+    for (let i = 0; i < 42; i++) { const d = new Date(y, m, 1 - off + i); out.push({ d: d, iso: iso(d), other: d.getMonth() !== m }); }
+    return out;
+  }
+
+  renderVals() {
+    const S = this.state, t = I18N[S.lang] || I18N.lv, self = this;
+    const gi = Math.min(Math.max(0, S.gIdx), Math.max(0, S.shots - 3));
+    const revSrc = (REVIEWS[S.lang] || []).slice().sort((a, b) => a[2] < b[2] ? 1 : -1);
+    const revAll = revSrc.map((r, i) => ({
+      key: r[1] + r[2], q: '“' + r[0] + '”', who: r[1],
+      meta: new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'long', year: 'numeric' }).format(pISO(r[2]))
+        + ' · ' + SVC(r[3]).n[S.lang]
+    }));
+    const revSpan = revSrc.length
+      ? new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'short', year: 'numeric' }).format(pISO(revSrc[revSrc.length - 1][2]))
+        + ' – ' + new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'short', year: 'numeric' }).format(pISO(revSrc[0][2]))
+      : '';
+    const step = Number(this.props.slotStep || S.step) || 30;
+    const todayISO = iso(new Date());
+    const money = n => '€' + n;
+    const pill = (bg, fg, bd, extra) => Object.assign({ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 36, padding: '0 10px', fontSize: 12, fontFamily: 'var(--font-heading)', fontWeight: 800, cursor: 'pointer', border: 'none', background: bg, color: fg, borderLeft: bd ? '1px solid var(--color-divider)' : 'none' }, extra || {});
+
+    const langs = ['LV', 'EN', 'RU'].map((c, i) => {
+      const code = ['lv', 'en', 'ru'][i], on = S.lang === code;
+      return { key: code, code: c, style: pill(on ? 'var(--color-accent)' : 'transparent', on ? 'var(--color-text)' : 'var(--color-text)', i > 0, { height: 32, fontSize: 11, letterSpacing: '0.06em' }), pick: () => self.save({ lang: code }) };
+    });
+
+    const services = SERVICES.map(s => {
+      const on = S.bSvc === s.id;
+      return {
+        key: s.id, id: s.id, name: s.n[S.lang], desc: s.d[S.lang], durLabel: s.min + ' min', priceLabel: money(s.price),
+        optLabel: s.n[S.lang] + ' · ' + s.min + ' min · ' + money(s.price),
+        pick: () => self.setSvc(s.id),
+        // the whole menu row is the Book control now
+        rowPick: () => { self.setSvc(s.id); location.hash = '#book'; },
+        rowStyle: { display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', border: 'none', borderBottom: '1px solid var(--color-divider)', background: on ? 'var(--color-surface)' : 'transparent', cursor: 'pointer', color: 'var(--color-text)', fontFamily: 'var(--font-body)', width: '100%', textAlign: 'left' },
+        markStyle: { width: 12, height: 12, flex: 'none', background: on ? 'var(--color-accent)' : 'transparent', border: '1.5px solid ' + (on ? 'var(--color-accent)' : 'var(--color-divider)') }
+      };
+    });
+
+    const dur = S.bSvc ? SVC(S.bSvc).min : 30;
+    const cellBase = { height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontFamily: 'var(--font-body)', border: '1px solid transparent', borderRadius: 5, padding: 0 };
+    const bookDays = this.monthCellsFor(S.bMonth).map(c => {
+      const free = !c.other && this.slotsFor(c.iso, dur).length > 0;
+      const sel = S.bDate === c.iso;
+      let st = { ...cellBase, background: 'transparent', color: 'color-mix(in srgb, var(--color-text) 28%, transparent)', cursor: 'default' };
+      if (c.other) st.opacity = 0.25;
+      else if (sel) st = { ...cellBase, background: 'var(--color-accent)', color: 'var(--color-text)', cursor: 'pointer', fontFamily: 'var(--font-heading)', fontWeight: 800 };
+      else if (free) st = { ...cellBase, background: 'var(--color-surface)', color: 'var(--color-text)', cursor: 'pointer', border: '1px solid var(--color-divider)' };
+      return { key: c.iso, n: c.d.getDate(), style: st, pick: () => { if (!c.other && free) self.setState({ bDate: c.iso, bTime: '' }); } };
+    });
+    const slotList = S.bDate ? this.slotsFor(S.bDate, dur) : [];
+    const dowShort = [0, 1, 2, 3, 4, 5, 6].map(i => ({ key: i, l: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short' }).format(new Date(2024, 0, 1 + i)) }));
+
+    const bm = pISO(S.bMonth);
+    const hoursRows = [1, 2, 3, 4, 5, 6, 0].map(i => {
+      const h = S.hours[i];
+      return { key: i, d: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'long' }).format(new Date(2024, 0, 1 + ((i + 6) % 7))), v: h.closed ? t.closed : h.o + '–' + h.c, style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '9px 12px', fontSize: 13, background: 'var(--color-surface)', opacity: h.closed ? 0.5 : 1 } };
+    });
+    const hoursLine = S.hours[1].o + '–' + S.hours[1].c + ' · ' + (S.hours[6].closed ? '' : 'Sa ' + S.hours[6].o + '–' + S.hours[6].c);
+
+    // ── admin ───────────────────────────────────────────────
+    const aDate = S.aDate, aD = pISO(aDate);
+    const rangeLabel = S.aView === 'month'
+      ? new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'long', year: 'numeric' }).format(aD)
+      : S.aView === 'week'
+        ? new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(monday(aD)) + ' – ' + new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(addD(monday(aD), 6))
+        : new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'long', day: 'numeric', month: 'long' }).format(aD);
+
+    const statusTag = st => st === 'confirmed' ? 'tag tag-neutral' : st === 'pending' ? 'tag tag-accent' : 'tag tag-outline';
+    const rowsForDay = d => {
+      const list = [];
+      S.bookings.filter(b => b.date === d && b.status !== 'declined').forEach(b => list.push({ kind: 'b', at: t2m(b.time), b: b }));
+      S.blocks.filter(b => b.date === d).forEach(b => list.push({ kind: 'x', at: t2m(b.from), x: b }));
+      return list.sort((a, b) => a.at - b.at);
+    };
+    const dayRows = rowsForDay(aDate).map(r => {
+      if (r.kind === 'x') return {
+        key: r.x.id, time: r.x.from + ' – ' + r.x.to, title: t.s_blocked, sub: r.x.reason || '', note: '', status: '', tagCls: 'tag tag-outline',
+        canConfirm: false, canDecline: false, style: { display: 'flex', gap: 16, alignItems: 'center', padding: '14px 8px', borderBottom: '1px solid var(--color-divider)', background: 'repeating-linear-gradient(135deg, transparent 0 8px, color-mix(in srgb, var(--color-text) 6%, transparent) 8px 16px)' },
+        confirm: () => { }, decline: () => { }, remove: () => self.save({ blocks: S.blocks.filter(x => x.id !== r.x.id) })
+      };
+      const b = r.b, sv = SVC(b.svc);
+      return {
+        key: b.id, time: b.time + ' – ' + m2t(t2m(b.time) + sv.min), title: b.name, sub: sv.n[S.lang] + ' · ' + sv.min + ' min · ' + money(sv.price) + ' · ' + b.phone + (b.email ? ' · ' + b.email : '') + (b.ig ? ' · ' + b.ig : ''),
+        note: (b.first ? t.a_first_tag + '. ' : '') + (b.note || ''),
+        status: t['s_' + b.status], tagCls: statusTag(b.status), canConfirm: b.status === 'pending', canDecline: b.status !== 'declined',
+        style: { display: 'flex', gap: 16, alignItems: 'center', padding: '14px 8px', borderBottom: '1px solid var(--color-divider)', background: b.status === 'pending' ? 'var(--color-accent-100)' : 'transparent' },
+        confirm: () => self.setStatus(b.id, 'confirmed'), decline: () => self.setStatus(b.id, 'declined'), remove: () => self.del(b.id)
+      };
+    });
+
+    const wStart = monday(aD);
+    const openMins = S.hours.filter(h => !h.closed).map(h => t2m(h.o));
+    const closeMins = S.hours.filter(h => !h.closed).map(h => t2m(h.c));
+    const wOpen = Math.min.apply(null, openMins.length ? openMins : [600]);
+    const wClose = Math.max.apply(null, closeMins.length ? closeMins : [1140]);
+    const PXH = 54, wH = (wClose - wOpen) / 60 * PXH;
+    const weekHeads = [0, 1, 2, 3, 4, 5, 6].map(i => {
+      const d = addD(wStart, i), di = iso(d), on = di === aDate;
+      return { key: di, dow: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short' }).format(d), n: d.getDate(), pick: () => self.setState({ aDate: di, aView: 'day' }), style: { padding: '8px 6px', cursor: 'pointer', borderLeft: '1px solid var(--color-divider)', background: on ? 'var(--color-accent)' : 'transparent', color: on ? 'var(--color-text)' : di === todayISO ? 'var(--color-accent-700)' : 'var(--color-text)' } };
+    });
+    const weekHours = [];
+    for (let m = wOpen; m <= wClose; m += 60) weekHours.push({ key: m, l: m2t(m), style: { position: 'absolute', top: (m - wOpen) / 60 * PXH - 7, right: 8, fontSize: 10, color: 'color-mix(in srgb, var(--color-text) 55%, transparent)' } });
+    const weekCols = [0, 1, 2, 3, 4, 5, 6].map(i => {
+      const d = addD(wStart, i), di = iso(d), h = self.hoursFor(di);
+      const items = rowsForDay(di).map(r => {
+        const isB = r.kind === 'b', sv = isB ? SVC(r.b.svc) : null;
+        const from = isB ? t2m(r.b.time) : t2m(r.x.from), to = isB ? from + sv.min : t2m(r.x.to);
+        const pend = isB && r.b.status === 'pending';
+        return {
+          key: isB ? r.b.id : r.x.id, time: m2t(from), title: isB ? r.b.name : (r.x.reason || t.s_blocked),
+          open: () => self.setState({ aDate: di, aView: 'day' }),
+          style: { position: 'absolute', left: 2, right: 2, top: (from - wOpen) / 60 * PXH, height: Math.max(22, (to - from) / 60 * PXH - 2), borderRadius: 5, overflow: 'hidden', padding: '3px 5px', cursor: 'pointer', color: isB ? (pend ? 'var(--color-accent-900)' : 'var(--color-bg)') : 'var(--color-text)', background: isB ? (pend ? 'var(--color-accent-200)' : 'var(--color-neutral-900)') : 'repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-text) 12%, transparent) 6px 12px)', border: isB && pend ? '1px solid var(--color-accent)' : 'none' }
+        };
+      });
+      return { key: di, items: items, style: { position: 'relative', height: wH, borderLeft: '1px solid var(--color-divider)', background: h ? 'transparent' : 'color-mix(in srgb, var(--color-text) 4%, transparent)', backgroundImage: h ? 'repeating-linear-gradient(to bottom, var(--color-divider) 0 1px, transparent 1px ' + PXH + 'px)' : 'none' } };
+    });
+
+    const monthCells = this.monthCellsFor(iso(new Date(aD.getFullYear(), aD.getMonth(), 1))).map(c => {
+      const rows = rowsForDay(c.iso), h = self.hoursFor(c.iso);
+      const items = rows.slice(0, 3).map(r => {
+        const isB = r.kind === 'b';
+        return { key: isB ? r.b.id : r.x.id, l: (isB ? r.b.time + ' ' + r.b.name : t.s_blocked), style: { fontSize: 10, marginTop: 3, padding: '2px 4px', borderRadius: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: isB ? (r.b.status === 'pending' ? 'var(--color-accent-200)' : 'var(--color-neutral-900)') : 'transparent', color: isB ? (r.b.status === 'pending' ? 'var(--color-accent-900)' : 'var(--color-bg)') : 'color-mix(in srgb, var(--color-text) 50%, transparent)', border: isB ? 'none' : '1px dashed var(--color-divider)' } };
+      });
+      return {
+        key: c.iso, n: c.d.getDate(), items: items, badge: rows.length > 3 ? '+' + (rows.length - 3) : (h ? '' : t.closed),
+        pick: () => self.setState({ aDate: c.iso, aView: 'day' }),
+        style: { minHeight: 96, padding: '7px 8px', borderRadius: 5, cursor: 'pointer', background: c.iso === aDate ? 'var(--color-accent-100)' : 'var(--color-surface)', opacity: c.other ? 0.4 : 1, outline: c.iso === todayISO ? '2px solid var(--color-accent)' : 'none', outlineOffset: -2 }
+      };
+    });
+
+    const pendingAll = S.bookings.filter(b => b.status === 'pending').sort((a, b) => (a.date + a.time) < (b.date + b.time) ? -1 : 1);
+    const pending = pendingAll.map(b => ({
+      key: b.id, name: b.name + (b.first ? ' · ' + t.a_first_tag : ''),
+      when: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short', day: 'numeric', month: 'short' }).format(pISO(b.date)) + ', ' + b.time,
+      svc: SVC(b.svc).n[S.lang] + ' · ' + money(SVC(b.svc).price), contact: b.phone + (b.email ? ' · ' + b.email : '') + (b.ig ? ' · ' + b.ig : ''),
+      confirm: () => self.setStatus(b.id, 'confirmed'), decline: () => self.setStatus(b.id, 'declined'),
+      goto: () => self.setState({ aDate: b.date, aView: 'day' })
+    }));
+
+    const wkStart = iso(monday(new Date())), wkEnd = iso(addD(monday(new Date()), 6));
+    const inWeek = S.bookings.filter(b => b.date >= wkStart && b.date <= wkEnd && b.status !== 'declined');
+    const stats = [
+      { key: 'a', k: t.st_today, v: S.bookings.filter(b => b.date === todayISO && b.status !== 'declined').length },
+      { key: 'b', k: t.st_week, v: inWeek.length },
+      { key: 'c', k: t.st_pend, v: pendingAll.length },
+      { key: 'd', k: t.st_income, v: money(inWeek.reduce((n, b) => n + SVC(b.svc).price, 0)) }
+    ];
+
+    const nbSlots = this.slotsFor(aDate, SVC(S.nbSvc).min, true).map(x => ({ key: x, t: x, label: x }));
+    const clientMap = {};
+    S.bookings.forEach(b => {
+      const k = b.phone || b.name;
+      if (!clientMap[k]) clientMap[k] = { name: b.name, phone: b.phone, list: [] };
+      clientMap[k].list.push(b);
+    });
+    const q = S.clientQ.toLowerCase();
+    const clients = Object.keys(clientMap).map(k => clientMap[k])
+      .filter(c => !q || (c.name + ' ' + c.phone).toLowerCase().indexOf(q) > -1)
+      .sort((a, b) => b.list.length - a.list.length)
+      .map(c => {
+        const sorted = c.list.slice().sort((a, b) => a.date < b.date ? 1 : -1), open = S.clientOpen === c.phone;
+        return {
+          key: c.phone || c.name, name: c.name, phone: c.phone, visits: c.list.length + ' ' + t.a_visits,
+          last: t.a_last + ': ' + new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short', year: 'numeric' }).format(pISO(sorted[0].date)) + ' · ' + money(c.list.reduce((n, b) => n + SVC(b.svc).price, 0)),
+          history: open ? sorted.map(b => ({ key: b.id, l: b.date + ' · ' + b.time + ' · ' + SVC(b.svc).n[S.lang] + ' · ' + t['s_' + b.status] })) : [],
+          open: () => self.setState({ clientOpen: open ? '' : c.phone }),
+          style: { borderTop: '1px solid var(--color-divider)', padding: '11px 0', cursor: 'pointer' }
+        };
+      });
+
+    const hourEdits = [1, 2, 3, 4, 5, 6, 0].map(i => {
+      const h = S.hours[i];
+      return {
+        key: i, dow: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short' }).format(new Date(2024, 0, 1 + ((i + 6) % 7))),
+        open: h.o, close: h.c, closed: h.closed, mark: h.closed ? '×' : '✓',
+        onOpen: e => { const v = e.target.value; self.save({ hours: S.hours.map((x, j) => j === i ? { ...x, o: v } : x) }); },
+        onClose: e => { const v = e.target.value; self.save({ hours: S.hours.map((x, j) => j === i ? { ...x, c: v } : x) }); },
+        toggle: () => self.save({ hours: S.hours.map((x, j) => j === i ? { ...x, closed: !x.closed } : x) }),
+        toggleStyle: { width: 22, height: 26, border: '1px solid var(--color-divider)', background: h.closed ? 'transparent' : 'var(--color-accent)', color: 'var(--color-text)', cursor: 'pointer', fontSize: 12, padding: 0 }
+      };
+    });
+    const stepOpts = [15, 30, 60].map((v, i) => ({ key: v, l: v + ' min', pick: () => self.save({ step: v }), style: pill(step === v ? 'var(--color-accent)' : 'transparent', 'var(--color-text)', i > 0, { height: 32 }) }));
+    const leadOpts = [0, 2, 3, 12].map((v, i) => ({ key: v, l: v + ' h', pick: () => self.save({ lead: v }), style: pill(S.lead === v ? 'var(--color-accent)' : 'transparent', 'var(--color-text)', i > 0, { height: 32 }) }));
+
+    const views = [['day', t.a_day], ['week', t.a_week], ['month', t.a_month]].map((v, i) => ({ key: v[0], l: v[1], pick: () => self.setState({ aView: v[0] }), style: pill(S.aView === v[0] ? 'var(--color-accent)' : 'transparent', 'var(--color-text)', i > 0, { height: 32 }) }));
+    const panels = [['requests', t.a_req], ['add', t.a_ad], ['block', t.a_bl], ['clients', t.a_cl], ['settings', t.a_set]].map((p, i) => ({ key: p[0], l: p[1], pick: () => self.setState({ aPanel: p[0] }), style: pill(S.aPanel === p[0] ? 'var(--color-accent)' : 'transparent', 'var(--color-text)', i > 0, { height: 30, fontSize: 11, flex: 1 }) }));
+
+    const shift = n => {
+      const d = pISO(S.aDate);
+      const nd = S.aView === 'month' ? new Date(d.getFullYear(), d.getMonth() + n, Math.min(d.getDate(), 28)) : addD(d, S.aView === 'week' ? 7 * n : n);
+      self.setState({ aDate: iso(nd) });
+    };
+    const freeToday = this.slotsFor(aDate, 60).length;
+
+    const bk = S.booked;
+    const bookedRows = bk ? [
+      { key: 1, k: t.r_service, v: SVC(bk.svc).n[S.lang] },
+      { key: 2, k: t.r_when, v: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'long', day: 'numeric', month: 'long' }).format(pISO(bk.date)) + ', ' + bk.time },
+      { key: 3, k: t.r_price, v: money(SVC(bk.svc).price) },
+      { key: 4, k: t.r_name, v: bk.name },
+      { key: 5, k: t.r_phone, v: bk.phone }
+    ] : [];
+
+    return {
+      adminHere: S.adminHere,
+      galleryCount: S.shots > 3 ? (gi + 1) + '–' + Math.min(gi + 3, S.shots) + ' / ' + S.shots : '',
+      atStart: gi <= 0, atEnd: gi >= Math.max(0, S.shots - 3),
+      swipeStart: e => self.onSwipeStart(e),
+      swipeMove: e => self.onSwipeMove(e),
+      swipeEnd: () => self.onSwipeEnd(),
+      galleryPrev: () => self.slideTo(gi - 1),
+      galleryNext: () => self.slideTo(gi + 1),
+      lbOpen: S.lbList.length > 0, lbMulti: S.lbList.length > 1,
+      lbImg: S.lbList.length ? React.createElement('img', { src: S.lbList[S.lbI], alt: '', style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: 'var(--shadow-lg)', borderRadius: 5 } }) : null,
+      lbCount: (S.lbI + 1) + ' / ' + S.lbList.length,
+      lbClose: () => self.setState({ lbList: [], lbI: 0 }),
+      lbPrev: e => { e.stopPropagation(); self.setState({ lbI: (S.lbI - 1 + S.lbList.length) % S.lbList.length }); },
+      lbNext: e => { e.stopPropagation(); self.setState({ lbI: (S.lbI + 1) % S.lbList.length }); },
+      openGallery: e => self.openLB(e, '#work'), openSolo: e => self.openLB(e, null),
+      t: t, brandName: this.props.studioName || 'Nail Studio',
+      isSite: S.route === 'site', isAdmin: S.route === 'admin',
+      locked: S.route === 'admin' && !S.authed, unlocked: S.route === 'admin' && S.authed,
+      langs: langs, services: services,
+      booked: !!bk, notBooked: !bk, bookedRef: bk ? bk.ref : '', bookedRows: bookedRows,
+      resetBooking: () => self.resetBooking(), submit: () => self.submit(), bookErr: S.bErr,
+      f: {
+        name: S.bName, phone: S.bPhone, email: S.bEmail, ig: S.bIg, note: S.bNote,
+        onName: e => self.setState({ bName: e.target.value }), onPhone: e => self.setState({ bPhone: e.target.value }),
+        onEmail: e => self.setState({ bEmail: e.target.value }), onIg: e => self.setState({ bIg: e.target.value }),
+        onNote: e => self.setState({ bNote: e.target.value }), toggleFirst: () => self.setState({ bFirst: !S.bFirst }),
+        firstStyle: S.bFirst ? { borderColor: 'var(--color-accent)', background: 'var(--color-accent)', boxShadow: 'inset 0 0 0 4px var(--color-bg)' } : {}
+      },
+      bookDays: bookDays, dowShort: dowShort,
+      bookMonthLabel: new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'long', year: 'numeric' }).format(bm),
+      prevMonth: () => self.setState({ bMonth: iso(new Date(bm.getFullYear(), bm.getMonth() - 1, 1)) }),
+      nextMonth: () => self.setState({ bMonth: iso(new Date(bm.getFullYear(), bm.getMonth() + 1, 1)) }),
+      legend: [
+        { key: 1, l: t.free, style: { width: 12, height: 12, borderRadius: 3, display: 'inline-block', background: 'var(--color-surface)', border: '1px solid var(--color-divider)' } },
+        { key: 2, l: t.full, style: { width: 12, height: 12, borderRadius: 3, display: 'inline-block', background: 'transparent', border: '1px solid transparent', boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-text) 15%, transparent)' } },
+        { key: 3, l: t.a_today, style: { width: 12, height: 12, borderRadius: 3, display: 'inline-block', background: 'var(--color-accent)' } }
+      ],
+      slots: slotList.map(x => ({ key: x, t: x, cls: S.bTime === x ? 'btn btn-primary' : 'btn btn-secondary', pick: () => self.setState({ bTime: x, bErr: '' }) })),
+      hasSlots: slotList.length > 0, noSlots: slotList.length === 0,
+      slotsMsg: S.bDate ? t.no_slots : t.pick_date,
+      selDateLabel: S.bDate ? '— ' + new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'long' }).format(pISO(S.bDate)) : '',
+      reviews: revAll.slice(0, 3).map(r => ({ key: r.key, q: r.q, who: r.who })),
+      allReviews: revAll,
+      revCount: revAll.length + ' ' + t.rev_all,
+      revSummary: revAll.length + ' ' + t.rev_all + ' · ' + revSpan,
+      revOpen: S.revOpen,
+      openReviews: () => self.setState({ revOpen: true }),
+      closeReviews: () => self.setState({ revOpen: false }),
+      stop: e => e.stopPropagation(),
+      moreTileStyle: {
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10,
+        padding: 18, minHeight: 88, textAlign: 'left', cursor: 'pointer', width: '100%',
+        background: 'var(--color-accent-100)', border: '1px solid var(--color-accent-300)',
+        borderRadius: 5, color: 'var(--color-text)', fontFamily: 'var(--font-body)'
+      },
+      faq: (FAQ[S.lang] || []).map((r, i) => ({ key: i, q: r[0], a: r[1] })),
+      contactRows: [
+        { key: 1, k: t.fact_where, v: ADDRESS, isText: true },
+        { key: 2, k: t.f_phone, v: PHONE, isLink: true, href: 'tel:' + PHONE.split(' ').join('') },
+        { key: 3, k: 'Instagram', v: IG, isLink: true, href: 'https://instagram.com/' + IG.slice(1) },
+        { key: 4, k: t.fact_hours, v: hoursLine, isText: true }
+      ],
+      hoursRows: hoursRows, igHandle: IG, igUrl: 'https://instagram.com/' + IG.slice(1),
+      mapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ADDRESS),
+      /* Geocoded from ADDRESS itself, so the pin follows the address when it
+         is edited. Keyless, pans and zooms. */
+      mapEmbed: 'https://maps.google.com/maps?q=' + encodeURIComponent(ADDRESS) + '&z=16&output=embed',
+      footerParts: [
+        { key: 'n', l: 'SIA ' + (this.props.studioName || 'Nail Studio') },
+        { key: 'r', l: 'Reģ. Nr. 40203456789' },
+        { key: 'p', l: PHONE }
+      ],
+
+      passInput: S.passInput, passErr: S.passErr,
+      onPass: e => self.setState({ passInput: e.target.value, passErr: '' }),
+      onPassKey: e => { if (e.key === 'Enter') self.unlockNow(); },
+      unlock: () => self.unlockNow(), lock: () => self.save({ authed: false, passInput: '' }),
+      views: views, panels: panels,
+      panelRequests: S.aPanel === 'requests', panelAdd: S.aPanel === 'add', panelBlock: S.aPanel === 'block',
+      panelClients: S.aPanel === 'clients', panelSettings: S.aPanel === 'settings',
+      isDayView: S.aView === 'day', isWeekView: S.aView === 'week', isMonthView: S.aView === 'month',
+      aRangeLabel: rangeLabel, aDayLabel: rangeLabel,
+      aDayShort: new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(aD),
+      aDaySummary: dayRows.length + ' · ' + freeToday + ' ' + t.a_free,
+      aPrev: () => shift(-1), aNext: () => shift(1), aToday: () => self.setState({ aDate: todayISO }),
+      dayRows: dayRows, dayEmpty: dayRows.length === 0,
+      weekHeads: weekHeads, weekHours: weekHours, weekCols: weekCols,
+      weekAxisStyle: { position: 'relative', height: wH },
+      monthCells: monthCells,
+      stats: stats, pending: pending, pendingCount: pendingAll.length ? '(' + pendingAll.length + ')' : '', noPending: pendingAll.length === 0,
+      nb: {
+        name: S.nbName, phone: S.nbPhone, svc: S.nbSvc, time: S.nbTime || (nbSlots[0] ? nbSlots[0].t : ''),
+        onName: e => self.setState({ nbName: e.target.value }), onPhone: e => self.setState({ nbPhone: e.target.value }),
+        onSvc: e => self.setState({ nbSvc: e.target.value, nbTime: '' }), onTime: e => self.setState({ nbTime: e.target.value })
+      },
+      nbSlots: nbSlots, nbErr: S.nbErr,
+      addWalkin: () => {
+        const time = S.nbTime || (nbSlots[0] ? nbSlots[0].t : '');
+        if (!S.nbName.trim() || !time) { self.setState({ nbErr: t.err_form }); return; }
+        self.save({
+          bookings: S.bookings.concat([{ id: uid(), ref: 'NS-' + uid().slice(0, 4).toUpperCase(), date: aDate, time: time, svc: S.nbSvc, name: S.nbName.trim(), phone: S.nbPhone.trim(), email: '', ig: '', note: '', first: false, status: 'confirmed', made: Date.now() }]),
+          nbName: '', nbPhone: '', nbTime: '', nbErr: ''
+        });
+      },
+      bl: {
+        date: S.blDate, from: S.blFrom, to: S.blTo, reason: S.blReason,
+        onDate: e => self.setState({ blDate: e.target.value }), onFrom: e => self.setState({ blFrom: e.target.value }),
+        onTo: e => self.setState({ blTo: e.target.value }), onReason: e => self.setState({ blReason: e.target.value })
+      },
+      addBlock: () => self.save({ blocks: S.blocks.concat([{ id: uid(), date: S.blDate, from: S.blFrom, to: S.blTo, reason: S.blReason }]), blReason: '' }),
+      blockWholeDay: () => self.save({ blocks: S.blocks.concat([{ id: uid(), date: S.blDate, from: '00:00', to: '23:59', reason: S.blReason || t.s_blocked }]), blReason: '' }),
+      blockList: S.blocks.slice().sort((a, b) => a.date < b.date ? -1 : 1).map(b => ({
+        key: b.id, l: b.date + ' · ' + b.from + '–' + b.to + (b.reason ? ' · ' + b.reason : ''),
+        remove: () => self.save({ blocks: S.blocks.filter(x => x.id !== b.id) })
+      })),
+      clientQ: S.clientQ, onClientQ: e => self.setState({ clientQ: e.target.value }), clients: clients,
+      hourEdits: hourEdits, stepOpts: stepOpts, leadOpts: leadOpts,
+      copyLabel: S.copied ? t.a_copied : t.a_copy,
+      copyDay: () => {
+        const txt = rangeLabel + '\n' + dayRows.map(r => r.time + '  ' + r.title + '  ' + r.sub).join('\n');
+        try { navigator.clipboard.writeText(txt); } catch (e) { }
+        self.setState({ copied: true });
+        setTimeout(() => self.setState({ copied: false }), 1600);
+      },
+      printDay: () => window.print(),
+      exportJson: () => {
+        const data = JSON.stringify({ bookings: S.bookings, blocks: S.blocks, hours: S.hours }, null, 2);
+        try {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+          a.download = 'nailstudio-bookings.json'; a.click();
+        } catch (e) { }
+      }
+    };
+  }
+
+  unlockNow() {
+    const code = String(this.props.adminPasscode || '2468');
+    if (this.state.passInput === code) this.save({ authed: true, passInput: '', passErr: '' });
+    else this.setState({ passErr: I18N[this.state.lang].a_wrong });
+  }
+}
+</script>
+</body>
+</html>

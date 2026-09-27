@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/styles.css">
+<script src="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/_ds_bundle.js"></script>
+<script src="./config.js"></script>
+<script src="./booking-store.js"></script>
+<meta name="omelette-owns-print" content="1">
+<style>
+:root{
+--color-accent:#D49286;
+--color-accent-100:#fbf1ee;--color-accent-200:#f4ded8;--color-accent-300:#ecc7bd;
+--color-accent-400:#e0ac9f;--color-accent-500:#D49286;--color-accent-600:#c07c6e;
+--color-accent-700:#a26154;--color-accent-800:#7b473c;--color-accent-900:#4f2e26;
+--color-accent-2:#D49286;
+--color-accent-2-100:#fbf1ee;--color-accent-2-200:#f4ded8;--color-accent-2-300:#ecc7bd;
+--color-accent-2-400:#e0ac9f;--color-accent-2-500:#D49286;--color-accent-2-600:#c07c6e;
+--color-accent-2-700:#a26154;--color-accent-2-800:#7b473c;--color-accent-2-900:#4f2e26;
+}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--color-bg);-webkit-text-size-adjust:100%}
+.btn{border-radius:5px}
+.input{border-radius:5px}
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent-800);text-decoration:underline}
+@media (max-width:760px){
+  input.input,select.input{font-size:16px!important;min-height:44px!important}
+  .btn{min-height:40px}
+}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff}
+  table{font-size:9pt}
+  thead{display:table-header-group}
+  tr{break-inside:avoid}
+}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+<sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="History login" style="min-height:100vh;display:grid;place-items:center;padding:32px">
+  <div style="width:min(380px,100%)">
+    <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ brandName }}</div>
+    <h1 style="font-size:40px;letter-spacing:-0.035em;margin:0 0 8px">{{ t.title }}</h1>
+    <p class="text-muted" style="font-size:14px;margin:0 0 26px;max-width:34ch">{{ t.gate_lead }}</p>
+    <div class="field"><label>{{ t.passcode }}</label>
+      <input class="input" type="password" value="{{ passInput }}" onChange="{{ onPass }}" onKeyDown="{{ onPassKey }}" placeholder="••••">
+    </div>
+    <button class="btn btn-primary btn-block" onClick="{{ unlock }}">{{ t.enter }}</button>
+    <div style="font-size:13px;color:var(--color-accent-700);margin-top:10px;min-height:18px">{{ passErr }}</div>
+    <div style="height:2px;background:var(--color-divider);margin:24px 0"></div>
+    <a href="Admin.dc.html">{{ t.to_admin }}</a>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ open }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Booking history">
+
+  <header class="nav no-print" style="{{ headerStyle }}">
+    <div class="nav-brand" style="margin-right:0;font-size:16px;white-space:nowrap">{{ brandName }} <span style="color:var(--color-accent-700)">/ {{ t.title }}</span></div>
+    <div style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap">
+      <button class="btn btn-primary" style="white-space:nowrap" onClick="{{ exportCsv }}">{{ t.excel }}</button>
+      <button class="btn btn-secondary" style="white-space:nowrap" onClick="{{ exportPdf }}">{{ t.pdf }}</button>
+      <a class="btn btn-secondary" href="Admin.dc.html" style="white-space:nowrap">{{ t.calendar }}</a>
+    </div>
+    <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;flex:none">
+      <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+        <button onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.code }}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="{{ mainStyle }}">
+
+    <div style="display:none" data-print-only="1"></div>
+
+    <div style="{{ statsStyle }}">
+      <sc-for list="{{ stats }}" as="s" hint-placeholder-count="5">
+        <div style="background:var(--color-surface);padding:13px 14px;border-radius:5px">
+          <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">{{ s.k }}</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;line-height:1.15">{{ s.v }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div class="no-print" style="{{ filterStyle }}">
+      <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;flex-wrap:wrap">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.l }} <span style="opacity:0.6;margin-left:5px">{{ f.n }}</span></button>
+        </sc-for>
+      </div>
+      <input class="input" style="flex:1 1 190px;min-width:0" value="{{ query }}" onChange="{{ onQuery }}" placeholder="{{ t.search_ph }}">
+      <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden">
+        <sc-for list="{{ sorts }}" as="s" hint-placeholder-count="2">
+          <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.l }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table class="table" style="min-width:940px">
+        <thead>
+          <tr>
+            <sc-for list="{{ heads }}" as="h" hint-placeholder-count="11">
+              <th style="{{ h.style }}">{{ h.l }}</th>
+            </sc-for>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+            <tr style="{{ r.style }}">
+              <td style="padding:11px 8px;font-family:var(--font-heading);font-weight:800;font-size:12px;white-space:nowrap">{{ r.ref }}</td>
+              <td style="padding:11px 8px;font-size:13px;white-space:nowrap">{{ r.date }}</td>
+              <td style="padding:11px 8px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.time }}</td>
+              <td style="padding:11px 8px"><span class="{{ r.tagCls }}" style="{{ r.tagStyle }}">{{ r.status }}</span></td>
+              <td style="padding:11px 8px;font-size:13px;font-family:var(--font-heading);font-weight:800">{{ r.name }}</td>
+              <td style="padding:11px 8px;font-size:13px;white-space:nowrap">{{ r.phone }}</td>
+              <td style="padding:11px 8px;font-size:12px">{{ r.contact }}</td>
+              <td style="padding:11px 8px;font-size:13px">{{ r.svc }}</td>
+              <td style="padding:11px 8px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.dur }}</td>
+              <td style="padding:11px 8px;font-size:13px;font-family:var(--font-heading);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.price }}</td>
+              <td style="padding:11px 8px;font-size:12px;max-width:280px">{{ r.note }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+      <p class="text-muted" style="padding:24px 0;margin:0">{{ t.none }}</p>
+    </sc-if>
+
+    <div style="height:1px;background:var(--color-divider);margin-top:2px"></div>
+    <p class="text-muted" style="font-size:12px;margin:14px 0 0">{{ footNote }}</p>
+  </main>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;studioName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nail Studio&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;passcode&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2468&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NS = window.NailStore;
+const { iso, pISO, m2t, t2m, SVC, LOCALE, AUTHKEY, LANGKEY } = NS;
+
+const H = {
+  lv: {
+    title: 'Vēsture', gate_lead: 'Ievadi studijas kodu, lai atvērtu vēsturi.', passcode: 'Kods', enter: 'Ienākt',
+    wrong: 'Nepareizs kods.', to_admin: 'Uz kalendāru', calendar: 'Kalendārs',
+    excel: 'Excel (CSV)', pdf: 'PDF / Drukāt', search_ph: 'Vārds, telefons, numurs…',
+    all: 'Visi', newest: 'Jaunākie', oldest: 'Vecākie', none: 'Nav ierakstu ar šiem filtriem.',
+    h_ref: 'Numurs', h_date: 'Datums', h_time: 'Laiks', h_status: 'Statuss', h_name: 'Klients',
+    h_phone: 'Telefons', h_contact: 'E-pasts / IG', h_svc: 'Pakalpojums', h_dur: 'Ilgums',
+    h_price: 'Cena', h_note: 'Piezīmes',
+    s_pending: 'Gaida', s_confirmed: 'Apstiprināts', s_declined: 'Atteikts', s_deleted: 'Dzēsts',
+    st_all: 'Kopā', st_done: 'Apstiprināti', st_pend: 'Gaida', st_lost: 'Atteikti / dzēsti', st_sum: 'Apstiprinātā summa',
+    first_tag: 'Pirmā reize', yes: 'Jā', no: 'Nē',
+    foot: 'Vēsture glabājas šajā pārlūkā. CSV atveras Excel; PDF — caur drukas logu.'
+  },
+  en: {
+    title: 'History', gate_lead: 'Enter the studio passcode to open the history.', passcode: 'Passcode', enter: 'Enter',
+    wrong: 'Wrong code.', to_admin: 'To the calendar', calendar: 'Calendar',
+    excel: 'Excel (CSV)', pdf: 'PDF / Print', search_ph: 'Name, phone, reference…',
+    all: 'All', newest: 'Newest', oldest: 'Oldest', none: 'No records match these filters.',
+    h_ref: 'Reference', h_date: 'Date', h_time: 'Time', h_status: 'Status', h_name: 'Client',
+    h_phone: 'Phone', h_contact: 'Email / IG', h_svc: 'Service', h_dur: 'Duration',
+    h_price: 'Price', h_note: 'Notes',
+    s_pending: 'Pending', s_confirmed: 'Confirmed', s_declined: 'Declined', s_deleted: 'Deleted',
+    st_all: 'Total', st_done: 'Confirmed', st_pend: 'Pending', st_lost: 'Declined / deleted', st_sum: 'Confirmed value',
+    first_tag: 'First visit', yes: 'Yes', no: 'No',
+    foot: 'History lives in this browser. CSV opens in Excel; PDF goes through the print dialog.'
+  },
+  ru: {
+    title: 'История', gate_lead: 'Введите код студии, чтобы открыть историю.', passcode: 'Код', enter: 'Войти',
+    wrong: 'Неверный код.', to_admin: 'В календарь', calendar: 'Календарь',
+    excel: 'Excel (CSV)', pdf: 'PDF / Печать', search_ph: 'Имя, телефон, номер…',
+    all: 'Все', newest: 'Сначала новые', oldest: 'Сначала старые', none: 'Нет записей по этим фильтрам.',
+    h_ref: 'Номер', h_date: 'Дата', h_time: 'Время', h_status: 'Статус', h_name: 'Клиент',
+    h_phone: 'Телефон', h_contact: 'E-mail / IG', h_svc: 'Услуга', h_dur: 'Длительность',
+    h_price: 'Цена', h_note: 'Заметки',
+    s_pending: 'Ожидает', s_confirmed: 'Подтверждено', s_declined: 'Отклонено', s_deleted: 'Удалено',
+    st_all: 'Всего', st_done: 'Подтверждено', st_pend: 'Ожидают', st_lost: 'Отклонено / удалено', st_sum: 'Сумма подтверждённых',
+    first_tag: 'Первый визит', yes: 'Да', no: 'Нет',
+    foot: 'История хранится в этом браузере. CSV открывается в Excel; PDF — через окно печати.'
+  }
+};
+
+class Component extends DCLogic {
+  state = {
+    lang: 'lv', authed: false, passInput: '', passErr: '',
+    data: { bookings: [], blocks: [] }, filter: 'all', query: '', sort: 'newest',
+    vw: typeof window === 'undefined' ? 1280 : window.innerWidth
+  };
+
+  componentDidMount() {
+    let lang = 'lv', authed = false;
+    try {
+      const l = localStorage.getItem(LANGKEY);
+      if (H[l]) lang = l;
+      authed = localStorage.getItem(AUTHKEY) === '1';
+    } catch (e) { }
+    this.setState({ data: NS.load(), lang: lang, authed: authed });
+    NS.session(sess => { if (sess.ok) this.setState({ authed: true, passErr: '' }); });
+    NS.pull(d => this.setState({ data: d }));
+    this._stopWatch = NS.watch(d => this.setState({ data: d }));
+    this._sync = e => { if (!e || e.key === NS.KEY) this.setState({ data: NS.load() }); };
+    window.addEventListener('storage', this._sync);
+    this._r = () => { if (window.innerWidth !== this.state.vw) this.setState({ vw: window.innerWidth }); };
+    window.addEventListener('resize', this._r);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('storage', this._sync);
+    if (this._stopWatch) this._stopWatch();
+    window.removeEventListener('resize', this._r);
+  }
+
+  unlockNow() {
+    const code = String(this.props.passcode || '2468');
+    if (this.state.passInput === code) {
+      try { localStorage.setItem(AUTHKEY, '1'); } catch (e) { }
+      this.setState({ authed: true, passInput: '', passErr: '' });
+    } else this.setState({ passErr: H[this.state.lang].wrong });
+  }
+
+  /* Every booking ever made, newest first, with the fields the master needs
+     to read a visit back months later. */
+  all() {
+    const t = H[this.state.lang] || H.lv;
+    return this.state.data.bookings.map(b => {
+      const sv = SVC(b.svc);
+      return {
+        b: b, sv: sv, statusKey: b.status,
+        statusLabel: t['s_' + b.status] || b.status,
+        made: b.made ? new Date(b.made) : null,
+        sortKey: b.date + ' ' + b.time
+      };
+    });
+  }
+
+  csv() {
+    const t = H[this.state.lang] || H.lv;
+    const head = [t.h_ref, t.h_date, t.h_time, t.h_status, t.h_name, t.h_phone, 'Email', 'Instagram',
+      t.h_svc, t.h_dur + ' (min)', t.h_price + ' (EUR)', t.first_tag, t.h_note];
+    const cell = v => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[";\n]/.test(s) ? '"' + s.split('"').join('""') + '"' : s;
+    };
+    const lines = [head.map(cell).join(';')];
+    this.visible().forEach(r => {
+      lines.push([r.b.ref, r.b.date, r.b.time + '-' + m2t(t2m(r.b.time) + r.sv.min), r.statusLabel,
+        r.b.name, r.b.phone, r.b.email, r.b.ig, r.sv.n[this.state.lang], r.sv.min, r.sv.price,
+        r.b.first ? t.yes : t.no, r.b.note].map(cell).join(';'));
+    });
+    // sep hint + BOM so Excel picks the delimiter and UTF-8 without an import wizard
+    return '\ufeff' + 'sep=;\n' + lines.join('\r\n');
+  }
+
+  visible() {
+    const S = this.state, q = S.query.trim().toLowerCase();
+    let list = this.all();
+    if (S.filter !== 'all') list = list.filter(r => r.statusKey === S.filter);
+    if (q) list = list.filter(r => {
+      const hay = [r.b.ref, r.b.name, r.b.phone, r.b.email, r.b.ig, r.b.note, r.b.date, r.sv.n[S.lang]].join(' ').toLowerCase();
+      return hay.indexOf(q) > -1;
+    });
+    return list.sort((a, b) => S.sort === 'newest'
+      ? (a.sortKey < b.sortKey ? 1 : -1)
+      : (a.sortKey > b.sortKey ? 1 : -1));
+  }
+
+  renderVals() {
+    const S = this.state, t = H[S.lang] || H.lv, self = this;
+    const phone = S.vw < 760;
+    const money = n => '€' + n;
+    const pill = (on, i, extra) => Object.assign({
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: phone ? 42 : 32, padding: phone ? '0 12px' : '0 10px',
+      fontSize: 12, fontFamily: 'var(--font-heading)', fontWeight: 800, cursor: 'pointer', border: 'none',
+      color: 'var(--color-text)', background: on ? 'var(--color-accent)' : 'transparent',
+      borderLeft: i > 0 ? '1px solid var(--color-divider)' : 'none', whiteSpace: 'nowrap'
+    }, extra || {});
+    const tagCls = st => st === 'confirmed' ? 'tag tag-neutral' : st === 'pending' ? 'tag tag-accent' : 'tag tag-outline';
+
+    const every = this.all();
+    const count = k => every.filter(r => r.statusKey === k).length;
+    const confirmedSum = every.filter(r => r.statusKey === 'confirmed').reduce((n, r) => n + r.sv.price, 0);
+
+    const rows = this.visible().map(r => ({
+      key: r.b.id,
+      ref: r.b.ref,
+      date: new Intl.DateTimeFormat(LOCALE[S.lang], { day: '2-digit', month: 'short', year: 'numeric' }).format(pISO(r.b.date)),
+      time: r.b.time + '–' + m2t(t2m(r.b.time) + r.sv.min),
+      status: r.statusLabel, tagCls: tagCls(r.statusKey),
+      tagStyle: r.statusKey === 'declined' || r.statusKey === 'deleted'
+        ? { color: '#8B1A1A', borderColor: '#8B1A1A' }
+        : {},
+      name: r.b.name + (r.b.first ? ' ★' : ''),
+      phone: r.b.phone || '—',
+      contact: [r.b.email, r.b.ig].filter(Boolean).join(' · ') || '—',
+      svc: r.sv.n[S.lang],
+      dur: r.sv.min + ' min',
+      price: money(r.sv.price),
+      note: r.b.note || '—',
+      style: {
+        cursor: 'default',
+        color: r.statusKey === 'declined' || r.statusKey === 'deleted' ? '#8B1A1A' : 'var(--color-text)',
+        background: r.statusKey === 'pending' ? 'var(--color-accent-100)' : 'transparent',
+        textDecoration: r.statusKey === 'deleted' ? 'line-through' : 'none'
+      }
+    }));
+
+    const headKeys = ['h_ref', 'h_date', 'h_time', 'h_status', 'h_name', 'h_phone', 'h_contact', 'h_svc', 'h_dur', 'h_price', 'h_note'];
+
+    return {
+      t: t, brandName: this.props.studioName || 'Nail Studio',
+      locked: !S.authed, open: S.authed,
+      passInput: S.passInput, passErr: S.passErr,
+      onPass: e => self.setState({ passInput: e.target.value, passErr: '' }),
+      onPassKey: e => { if (e.key === 'Enter') self.unlockNow(); },
+      unlock: () => self.unlockNow(),
+
+      langs: ['LV', 'EN', 'RU'].map((c, i) => {
+        const code = ['lv', 'en', 'ru'][i];
+        return {
+          key: code, code: c, style: pill(S.lang === code, i, { fontSize: 11, letterSpacing: '0.06em' }),
+          pick: () => { try { localStorage.setItem(LANGKEY, code); } catch (e) { } self.setState({ lang: code }); }
+        };
+      }),
+
+      headerStyle: {
+        position: phone ? 'relative' : 'sticky', top: 0, zIndex: 30, background: 'var(--color-bg)',
+        flexWrap: 'wrap', gap: phone ? '8px 10px' : '10px 14px',
+        paddingLeft: phone ? 14 : undefined, paddingRight: phone ? 14 : undefined,
+        paddingTop: phone ? 12 : undefined, paddingBottom: phone ? 12 : undefined
+      },
+      mainStyle: { padding: phone ? '18px 14px' : '22px 26px' },
+      statsStyle: {
+        display: 'grid', gap: 2, marginBottom: 20,
+        gridTemplateColumns: phone ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(150px,1fr))'
+      },
+      filterStyle: {
+        display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16
+      },
+
+      stats: [
+        { key: 'a', k: t.st_all, v: every.length },
+        { key: 'b', k: t.st_done, v: count('confirmed') },
+        { key: 'c', k: t.st_pend, v: count('pending') },
+        { key: 'd', k: t.st_lost, v: count('declined') + count('deleted') },
+        { key: 'e', k: t.st_sum, v: money(confirmedSum) }
+      ],
+
+      filters: [['all', t.all], ['confirmed', t.s_confirmed], ['pending', t.s_pending], ['declined', t.s_declined], ['deleted', t.s_deleted]]
+        .map((f, i) => ({
+          key: f[0], l: f[1],
+          n: f[0] === 'all' ? every.length : count(f[0]),
+          style: pill(S.filter === f[0], i),
+          pick: () => self.setState({ filter: f[0] })
+        })),
+      sorts: [['newest', t.newest], ['oldest', t.oldest]].map((s, i) => ({
+        key: s[0], l: s[1], style: pill(S.sort === s[0], i), pick: () => self.setState({ sort: s[0] })
+      })),
+      query: S.query, onQuery: e => self.setState({ query: e.target.value }),
+
+      heads: headKeys.map((k, i) => ({
+        key: k, l: t[k],
+        style: { whiteSpace: 'nowrap', textAlign: 'left', paddingRight: i === headKeys.length - 1 ? 8 : 14 }
+      })),
+      rows: rows, empty: rows.length === 0,
+      footNote: t.foot,
+
+      exportCsv: () => {
+        try {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([self.csv()], { type: 'text/csv;charset=utf-8' }));
+          a.download = 'nailstudio-history-' + iso(new Date()) + '.csv';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        } catch (e) { }
+      },
+      exportPdf: () => window.print()
+    };
+  }
+}
+</script>
+</body>
+</html>

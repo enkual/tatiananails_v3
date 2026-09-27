@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/styles.css">
+<script src="_ds/modernist-2a768dbb-d642-4c8d-a79c-5829b8b2ede8/_ds_bundle.js"></script>
+<script src="./config.js"></script>
+<script src="./booking-store.js"></script>
+<style>
+:root{
+--color-accent:#D49286;
+--color-accent-100:#fbf1ee;--color-accent-200:#f4ded8;--color-accent-300:#ecc7bd;
+--color-accent-400:#e0ac9f;--color-accent-500:#D49286;--color-accent-600:#c07c6e;
+--color-accent-700:#a26154;--color-accent-800:#7b473c;--color-accent-900:#4f2e26;
+--color-accent-2:#D49286;
+--color-accent-2-100:#fbf1ee;--color-accent-2-200:#f4ded8;--color-accent-2-300:#ecc7bd;
+--color-accent-2-400:#e0ac9f;--color-accent-2-500:#D49286;--color-accent-2-600:#c07c6e;
+--color-accent-2-700:#a26154;--color-accent-2-800:#7b473c;--color-accent-2-900:#4f2e26;
+}
+body{margin:0;background:var(--color-bg)}
+.btn-primary{color:var(--color-text)}
+.btn{border-radius:5px}
+.input{border-radius:5px}
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent-800);text-decoration:underline}
+select.input{appearance:none;background-image:none}
+@media print{.no-print{display:none!important}}
+html,body{overflow-x:clip}
+@media (max-width:760px){
+  /* 16px is the threshold below which iOS zooms the page on focus */
+  input.input,select.input,textarea.input{font-size:16px!important;min-height:44px!important}
+  .btn{min-height:40px}
+}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+<sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Admin login" style="min-height:100vh;display:grid;place-items:center;padding:32px">
+  <div style="width:min(380px,100%)">
+    <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ brandName }}</div>
+    <h1 style="font-size:40px;letter-spacing:-0.035em;margin:0 0 8px">{{ t.title }}</h1>
+    <p class="text-muted" style="font-size:14px;margin:0 0 26px;max-width:34ch">{{ t.gate_lead }}</p>
+    <div class="field"><label>{{ t.passcode }}</label>
+      <input class="input" type="password" value="{{ passInput }}" onChange="{{ onPass }}" onKeyDown="{{ onPassKey }}" placeholder="••••">
+    </div>
+    <button class="btn btn-primary btn-block" onClick="{{ unlock }}">{{ t.enter }}</button>
+    <div style="font-size:13px;color:var(--color-accent-700);margin-top:10px;min-height:18px">{{ passErr }}</div>
+    <div style="height:2px;background:var(--color-divider);margin:24px 0"></div>
+    <a href="{{ homeHref }}" style="font-size:13px">{{ t.to_site }}</a>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ open }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Admin calendar">
+
+  <header class="nav no-print" style="{{ headerStyle }}">
+    <div class="nav-brand" style="margin-right:0;font-size:16px;white-space:nowrap">{{ brandName }} <span style="color:var(--color-accent-700)">/ {{ t.title }}</span></div>
+
+    <div style="{{ navGroupStyle }}">
+      <button class="btn btn-secondary btn-icon" onClick="{{ prev }}">‹</button>
+      <div style="position:relative">
+        <button class="btn btn-secondary" style="white-space:nowrap" onClick="{{ toggleToday }}">{{ t.today }} ▾</button>
+        <sc-if value="{{ todayOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:calc(100% + 6px);left:0;z-index:40;min-width:170px;background:var(--color-bg);border:1px solid var(--color-divider);border-radius:5px;box-shadow:var(--shadow-md);overflow:hidden">
+            <sc-for list="{{ todayOpts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.pick }}" style="{{ o.style }}">
+                <span>{{ o.l }}</span>
+                <span style="font-size:11px;opacity:0.7">{{ o.hint }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <button class="btn btn-secondary btn-icon" onClick="{{ next }}">›</button>
+      <div style="{{ rangeStyle }}">{{ rangeLabel }}</div>
+    </div>
+
+    <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;margin-left:auto;flex:none">
+      <sc-for list="{{ views }}" as="v" hint-placeholder-count="3">
+        <button onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.l }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;flex:none">
+      <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+        <button onClick="{{ l.pick }}" style="{{ l.style }}">{{ l.code }}</button>
+      </sc-for>
+    </div>
+    <a class="btn btn-secondary" href="History.dc.html" style="white-space:nowrap">{{ t.history }}</a>
+    <a class="btn btn-secondary" href="{{ homeHref }}" style="{{ toSiteStyle }}" title="{{ t.to_site }}">{{ toSiteLabel }}</a>
+    <button class="btn btn-secondary" onClick="{{ lock }}">{{ t.out }}</button>
+  </header>
+
+  <div style="{{ shellStyle }}">
+
+    <main style="{{ mainStyle }}">
+
+      <div style="{{ statsStyle }}">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+          <div style="{{ s.style }}">
+            <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">{{ s.k }}</div>
+            <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;line-height:1.15">{{ s.v }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x:auto;overflow-y:hidden;padding-bottom:12px">
+          <div style="{{ weekInnerStyle }}">
+          <div style="display:grid;grid-template-columns:58px repeat(7,minmax(0,1fr));border-bottom:2px solid var(--color-divider)">
+            <div></div>
+            <sc-for list="{{ weekHeads }}" as="h" hint-placeholder-count="7">
+              <div onClick="{{ h.pick }}" style="{{ h.style }}">
+                <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase">{{ h.dow }}</div>
+                <div style="font-family:var(--font-heading);font-weight:800;font-size:19px">{{ h.n }}</div>
+                <div style="font-size:10px">{{ h.count }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:58px repeat(7,minmax(0,1fr))">
+            <div style="{{ axisStyle }}">
+              <sc-for list="{{ hourMarks }}" as="h" hint-placeholder-count="10">
+                <div style="{{ h.style }}">{{ h.l }}</div>
+              </sc-for>
+            </div>
+            <sc-for list="{{ weekCols }}" as="c" hint-placeholder-count="7">
+              <div style="{{ c.style }}">
+                <sc-for list="{{ c.lines }}" as="l" hint-placeholder-count="10">
+                  <div style="{{ l.style }}"></div>
+                </sc-for>
+                <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="2">
+                  <div onClick="{{ i.open }}" style="{{ i.style }}">
+                    <div style="font-size:11px;line-height:1.25;font-family:var(--font-heading);font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ i.time }}</div>
+                    <div style="font-size:11px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ i.name }}</div>
+                    <div style="font-size:10px;line-height:1.25;opacity:0.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ i.svc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDay }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+            <h2 style="margin:0;font-size:clamp(19px,2.2vw,24px);letter-spacing:-0.02em;min-width:0;flex:1 1 auto">{{ dayLabel }}</h2>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="text-muted" style="font-size:12px">{{ daySummary }}</span>
+              <button class="btn btn-secondary no-print" style="white-space:nowrap" onClick="{{ copyDay }}">{{ copyLabel }}</button>
+              <button class="btn btn-secondary no-print" style="white-space:nowrap" onClick="{{ printDay }}">{{ t.print }}</button>
+            </div>
+          </div>
+          <div style="border-top:2px solid var(--color-divider)">
+            <sc-for list="{{ dayRows }}" as="r" hint-placeholder-count="6">
+              <div onClick="{{ r.open }}" style="{{ r.style }}">
+                <div style="{{ r.timeStyle }}">{{ r.time }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:16px;font-family:var(--font-heading);font-weight:800">{{ r.name }}</div>
+                  <div style="font-size:13px">{{ r.svc }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ r.contact }}</div>
+                  <div style="font-size:12px;color:var(--color-accent-700)">{{ r.note }}</div>
+                </div>
+                <div style="{{ r.actionStyle }}">
+                  <span class="{{ r.tagCls }}">{{ r.status }}</span>
+                  <sc-if value="{{ r.canConfirm }}" hint-placeholder-val="{{ false }}">
+                    <button class="btn btn-primary no-print" onClick="{{ r.confirm }}">{{ t.confirm }}</button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ dayEmpty }}" hint-placeholder-val="{{ false }}">
+            <p class="text-muted" style="padding:22px 0;margin:0">{{ t.none }}</p>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMonth }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:2px">
+            <sc-for list="{{ dowShort }}" as="d" hint-placeholder-count="7">
+              <div class="text-muted" style="{{ dowStyle }}">{{ d.l }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">
+            <sc-for list="{{ monthCells }}" as="c" hint-placeholder-count="42">
+              <div onClick="{{ c.pick }}" style="{{ c.style }}">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ c.n }}</span>
+                  <span style="font-size:10px" class="text-muted">{{ c.badge }}</span>
+                </div>
+                <sc-for list="{{ c.items }}" as="i" hint-placeholder-count="0">
+                  <div style="{{ i.style }}">{{ i.l }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+
+    <aside class="no-print" style="{{ asideStyle }}">
+
+      <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">{{ t.booking }} {{ sel.ref }}</div>
+            <button class="btn btn-ghost" onClick="{{ clearSel }}">×</button>
+          </div>
+          <h2 style="margin:0 0 4px;font-size:26px;letter-spacing:-0.02em">{{ sel.name }}</h2>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+            <span class="{{ sel.tagCls }}">{{ sel.status }}</span>
+            <sc-if value="{{ sel.isFirst }}" hint-placeholder-val="{{ false }}">
+              <span class="tag tag-outline">{{ t.first_tag }}</span>
+            </sc-if>
+          </div>
+          <sc-for list="{{ sel.rows }}" as="r" hint-placeholder-count="6">
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-top:1px solid var(--color-divider);font-size:13px">
+              <span class="text-muted" style="flex:none">{{ r.k }}</span>
+              <span style="text-align:right;font-family:var(--font-heading);font-weight:700">{{ r.v }}</span>
+            </div>
+          </sc-for>
+          <div style="height:1px;background:var(--color-divider)"></div>
+          <sc-if value="{{ sel.hasNote }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;padding:12px;background:var(--color-accent-100);border-radius:5px">
+              <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:5px;font-weight:700">{{ t.note }}</div>
+              <div style="font-size:13px;line-height:1.45">{{ sel.note }}</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:18px">
+            <sc-if value="{{ sel.canConfirm }}" hint-placeholder-val="{{ false }}">
+              <button class="btn btn-primary" onClick="{{ sel.confirm }}">{{ t.confirm }}</button>
+            </sc-if>
+            <sc-if value="{{ sel.canDecline }}" hint-placeholder-val="{{ false }}">
+              <button class="btn btn-secondary" onClick="{{ sel.decline }}">{{ t.decline }}</button>
+            </sc-if>
+            <button class="btn btn-secondary" onClick="{{ sel.remove }}" style="color: var(--color-bg); background-color: #EC1313AC">{{ t.remove }}</button>
+          </div>
+
+          <div style="height:2px;background:var(--color-divider);margin:20px 0"></div>
+          <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px;font-weight:700">{{ t.move }}</div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div class="field" style="flex:1;margin:0"><label>{{ t.date }}</label>
+              <input class="input" type="date" value="{{ mv.date }}" onChange="{{ mv.onDate }}">
+            </div>
+            <div class="field" style="flex:1;margin:0"><label>{{ t.time }}</label>
+              <select class="input" value="{{ mv.time }}" onChange="{{ mv.onTime }}">
+                <sc-for list="{{ mvSlots }}" as="s" hint-placeholder-count="6">
+                  <option value="{{ s.t }}">{{ s.t }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-block" onClick="{{ doMove }}">{{ t.move_btn }}</button>
+
+          <sc-if value="{{ sel.hasHistory }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="height:2px;background:var(--color-divider);margin:20px 0"></div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px;font-weight:700">{{ t.history }} {{ sel.visits }}</div>
+              <sc-for list="{{ sel.history }}" as="h" hint-placeholder-count="2">
+                <div style="font-size:12px;padding:7px 0;border-top:1px solid var(--color-divider)">{{ h.l }}</div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-divider)"></div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noSel }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+            <div style="{{ panelGroupStyle }}">
+              <sc-for list="{{ panelsA }}" as="p" hint-placeholder-count="3">
+                <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.l }}</button>
+              </sc-for>
+            </div>
+            <div style="{{ panelGroupStyle }}">
+              <sc-for list="{{ panelsB }}" as="p" hint-placeholder-count="2">
+                <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.l }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ pReq }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ t.requests }} {{ pendCount }}</div>
+              <sc-for list="{{ pending }}" as="p" hint-placeholder-count="2">
+                <div style="border-top:1px solid var(--color-divider);padding:12px 0">
+                  <div onClick="{{ p.open }}" style="cursor:pointer">
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ p.name }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ p.when }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ p.svc }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ p.contact }}</div>
+                  </div>
+                  <div style="display:flex;gap:6px;margin-top:8px">
+                    <button class="btn btn-primary" onClick="{{ p.confirm }}">{{ t.confirm }}</button>
+                    <button class="btn btn-secondary" onClick="{{ p.decline }}">{{ t.decline }}</button>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-divider)"></div>
+              <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+                <p class="text-muted" style="font-size:13px;margin:12px 0 0">{{ t.no_requests }}</p>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pAdd }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ t.add_title }} — {{ dayShort }}</div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.f_name }}</label><input class="input" value="{{ nb.name }}" onChange="{{ nb.onName }}"></div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.f_phone }}</label><input class="input" value="{{ nb.phone }}" onChange="{{ nb.onPhone }}"></div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.service }}</label>
+                <select class="input" value="{{ nb.svc }}" onChange="{{ nb.onSvc }}">
+                  <sc-for list="{{ serviceOpts }}" as="s" hint-placeholder-count="6">
+                    <option value="{{ s.id }}">{{ s.label }}</option>
+                  </sc-for>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.time }}</label>
+                <select class="input" value="{{ nb.time }}" onChange="{{ nb.onTime }}">
+                  <sc-for list="{{ nbSlots }}" as="s" hint-placeholder-count="8">
+                    <option value="{{ s.t }}">{{ s.t }}</option>
+                  </sc-for>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-block" onClick="{{ addBooking }}">{{ t.add_btn }}</button>
+              <div style="font-size:12px;color:var(--color-accent-700);margin-top:8px">{{ nbErr }}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pBlock }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ t.block_title }}</div>
+              <div class="field" style="margin-bottom:10px"><label>{{ t.date }}</label><input class="input" type="date" value="{{ bl.date }}" onChange="{{ bl.onDate }}"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field"><label>{{ t.from }}</label><input class="input" type="time" value="{{ bl.from }}" onChange="{{ bl.onFrom }}"></div>
+                <div class="field"><label>{{ t.to }}</label><input class="input" type="time" value="{{ bl.to }}" onChange="{{ bl.onTo }}"></div>
+              </div>
+              <div class="field" style="margin:10px 0"><label>{{ t.reason }}</label><input class="input" value="{{ bl.reason }}" onChange="{{ bl.onReason }}" placeholder="{{ t.reason_ph }}"></div>
+              <button class="btn btn-primary btn-block" onClick="{{ addBlock }}">{{ t.add_btn }}</button>
+              <button class="btn btn-secondary btn-block" onClick="{{ blockDay }}">{{ t.block_day }}</button>
+              <div style="height:2px;background:var(--color-divider);margin:18px 0"></div>
+              <sc-for list="{{ blockList }}" as="b" hint-placeholder-count="0">
+                <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--color-divider);padding:9px 0;font-size:13px">
+                  <span>{{ b.l }}</span>
+                  <button class="btn btn-ghost" onClick="{{ b.remove }}">×</button>
+                </div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-divider)"></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pClients }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ t.clients }}</div>
+              <input class="input" style="margin-bottom:14px" value="{{ clientQ }}" onChange="{{ onClientQ }}" placeholder="{{ t.clients_ph }}">
+              <sc-for list="{{ clients }}" as="c" hint-placeholder-count="3">
+                <div onClick="{{ c.open }}" style="border-top:1px solid var(--color-divider);padding:11px 0;cursor:pointer">
+                  <div style="display:flex;justify-content:space-between;gap:8px">
+                    <span style="font-family:var(--font-heading);font-weight:800;font-size:14px">{{ c.name }}</span>
+                    <span class="text-muted" style="font-size:12px;white-space:nowrap">{{ c.visits }}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:12px">{{ c.phone }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ c.last }}</div>
+                </div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-divider)"></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pHours }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px;font-weight:700">{{ t.hours }}</div>
+              <sc-for list="{{ hourEdits }}" as="h" hint-placeholder-count="7">
+                <div style="display:grid;grid-template-columns:52px 1fr 1fr 24px;gap:6px;align-items:center;padding:5px 0;border-top:1px solid var(--color-divider)">
+                  <span style="font-size:12px">{{ h.dow }}</span>
+                  <input class="input" type="time" style="min-height:30px;font-size:12px" value="{{ h.open }}" onChange="{{ h.onOpen }}" disabled="{{ h.closed }}">
+                  <input class="input" type="time" style="min-height:30px;font-size:12px" value="{{ h.close }}" onChange="{{ h.onClose }}" disabled="{{ h.closed }}">
+                  <button onClick="{{ h.toggle }}" style="{{ h.toggleStyle }}">{{ h.mark }}</button>
+                </div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-divider)"></div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin:20px 0 10px;font-weight:700">{{ t.step }}</div>
+              <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;width:max-content">
+                <sc-for list="{{ stepOpts }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.l }}</button>
+                </sc-for>
+              </div>
+              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent-700);margin:20px 0 10px;font-weight:700">{{ t.lead }}</div>
+              <div style="display:flex;border:1px solid var(--color-divider);border-radius:5px;overflow:hidden;width:max-content">
+                <sc-for list="{{ leadOpts }}" as="s" hint-placeholder-count="4">
+                  <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.l }}</button>
+                </sc-for>
+              </div>
+              <div style="height:2px;background:var(--color-divider);margin:22px 0"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="{{ dbDotStyle }}"></span>
+                <span style="font-size:12px;font-family:var(--font-heading);font-weight:800">{{ dbLabel }}</span>
+              </div>
+              <p class="text-muted" style="font-size:12px">{{ dbNote }}</p>
+              <button class="btn btn-secondary btn-block" onClick="{{ exportJson }}">{{ t.export }}</button>
+              <button class="btn btn-secondary btn-block" style="color:#8B1A1A;border-color:#8B1A1A" onClick="{{ clearAll }}">{{ clearLabel }}</button>
+              <a href="{{ homeHref }}" style="display:inline-block;margin-top:16px;font-size:13px">{{ t.to_site }}</a>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </aside>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;studioName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nail Studio&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;passcode&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2468&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NS = window.NailStore;
+const { iso, pISO, m2t, t2m, addD, monday, uid, SVC, SERVICES, LOCALE, AUTHKEY, LANGKEY } = NS;
+
+const A = {
+  lv: {
+    title: 'Admin', gate_lead: 'Ievadi studijas kodu, lai atvērtu kalendāru.', passcode: 'Kods', enter: 'Ienākt',
+    wrong: 'Nepareizs kods.', to_site: 'Atpakaļ uz vietni', out: 'Iziet', today: 'Šodien',
+    day: 'Diena', week: 'Nedēļa', month: 'Mēnesis', none: 'Šajā dienā nav pierakstu.',
+    confirm: 'Apstiprināt', decline: 'Atteikt', remove: 'Dzēst', print: 'Drukāt', copy: 'Kopēt dienu', copied: 'Nokopēts',
+    booking: 'Pieraksts', requests: 'Jauni pieteikumi', no_requests: 'Nav jaunu pieteikumu.',
+    add_title: 'Jauns pieraksts', add_btn: 'Pievienot', block_title: 'Bloķēt laiku', block_day: 'Bloķēt visu dienu',
+    clients: 'Klienti', clients_ph: 'Vārds vai telefons', hours: 'Darba laiks', step: 'Laika solis', lead: 'Minimālais brīdinājums',
+    date: 'Datums', time: 'Laiks', from: 'No', to: 'Līdz', reason: 'Iemesls', reason_ph: 'Brīvdiena, pusdienas…',
+    service: 'Pakalpojums', f_name: 'Vārds', f_phone: 'Telefons', f_email: 'E-pasts', note: 'Piezīme',
+    move: 'Pārcelt', move_btn: 'Pārcelt pierakstu', history: 'Vēsture', first_tag: 'Pirmā reize',
+    price: 'Cena', duration: 'Ilgums', made: 'Pieteikts', s_pending: 'Gaida', s_confirmed: 'Apstiprināts',
+    s_declined: 'Atteikts', s_deleted: 'Dzēsts', s_blocked: 'Bloķēts', closed: 'Slēgts', st_today: 'Šodien', st_week: 'Šonedēļ', st_pend: 'Gaida',
+    st_income: 'Plānots', free: 'brīvs', visits: 'vizītes', last: 'Pēdējā', err: 'Norādi vārdu un laiku.',
+    export: 'Eksportēt JSON', datanote: 'Dati glabājas tikai šajā pārlūkā. Aizpildi config.js, lai pieslēgtu Supabase.',
+    db_on: 'Supabase pieslēgts', db_off: 'Tikai šis pārlūks',
+    db_on_note: 'Pieraksti glabājas datubāzē un ir redzami visās ierīcēs.',
+    clear: 'Notīrīt visus datus', clear_sure: 'Tiešām notīrīt? Spied vēlreiz',
+    booked: 'pieraksti'
+  },
+  en: {
+    title: 'Admin', gate_lead: 'Enter the studio passcode to open the calendar.', passcode: 'Passcode', enter: 'Enter',
+    wrong: 'Wrong code.', to_site: 'Back to the site', out: 'Sign out', today: 'Today',
+    day: 'Day', week: 'Week', month: 'Month', none: 'Nothing booked on this day.',
+    confirm: 'Confirm', decline: 'Decline', remove: 'Delete', print: 'Print', copy: 'Copy day', copied: 'Copied',
+    booking: 'Booking', requests: 'New requests', no_requests: 'No new requests.',
+    add_title: 'New booking', add_btn: 'Add', block_title: 'Block time', block_day: 'Block the whole day',
+    clients: 'Clients', clients_ph: 'Name or phone', hours: 'Working hours', step: 'Slot step', lead: 'Minimum notice',
+    date: 'Date', time: 'Time', from: 'From', to: 'To', reason: 'Reason', reason_ph: 'Holiday, lunch…',
+    service: 'Service', f_name: 'Name', f_phone: 'Phone', f_email: 'Email', note: 'Note',
+    move: 'Reschedule', move_btn: 'Move this booking', history: 'History', first_tag: 'First visit',
+    price: 'Price', duration: 'Duration', made: 'Requested', s_pending: 'Pending', s_confirmed: 'Confirmed',
+    s_declined: 'Declined', s_deleted: 'Deleted', s_blocked: 'Blocked', closed: 'Closed', st_today: 'Today', st_week: 'This week', st_pend: 'Pending',
+    st_income: 'Expected', free: 'free', visits: 'visits', last: 'Last', err: 'Add a name and a time.',
+    export: 'Export JSON', datanote: 'Data lives in this browser only. Fill in config.js to connect Supabase.',
+    db_on: 'Supabase connected', db_off: 'This browser only',
+    db_on_note: 'Bookings are stored in the database and shared across devices.',
+    clear: 'Clear all data', clear_sure: 'Really clear? Press again',
+    booked: 'booked'
+  },
+  ru: {
+    title: 'Admin', gate_lead: 'Введите код студии, чтобы открыть календарь.', passcode: 'Код', enter: 'Войти',
+    wrong: 'Неверный код.', to_site: 'Вернуться на сайт', out: 'Выйти', today: 'Сегодня',
+    day: 'День', week: 'Неделя', month: 'Месяц', none: 'В этот день записей нет.',
+    confirm: 'Подтвердить', decline: 'Отклонить', remove: 'Удалить', print: 'Печать', copy: 'Копировать день', copied: 'Скопировано',
+    booking: 'Запись', requests: 'Новые заявки', no_requests: 'Новых заявок нет.',
+    add_title: 'Новая запись', add_btn: 'Добавить', block_title: 'Заблокировать время', block_day: 'Заблокировать весь день',
+    clients: 'Клиенты', clients_ph: 'Имя или телефон', hours: 'Часы работы', step: 'Шаг записи', lead: 'Минимальный запас',
+    date: 'Дата', time: 'Время', from: 'С', to: 'До', reason: 'Причина', reason_ph: 'Выходной, обед…',
+    service: 'Услуга', f_name: 'Имя', f_phone: 'Телефон', f_email: 'E-mail', note: 'Заметка',
+    move: 'Перенести', move_btn: 'Перенести запись', history: 'История', first_tag: 'Первый визит',
+    price: 'Цена', duration: 'Длительность', made: 'Заявка', s_pending: 'Ожидает', s_confirmed: 'Подтверждено',
+    s_declined: 'Отклонено', s_deleted: 'Удалено', s_blocked: 'Заблокировано', closed: 'Закрыто', st_today: 'Сегодня', st_week: 'На неделе', st_pend: 'Ожидают',
+    st_income: 'Ожидается', free: 'свободно', visits: 'визитов', last: 'Последний', err: 'Укажите имя и время.',
+    export: 'Экспорт JSON', datanote: 'Данные хранятся только в этом браузере. Заполните config.js, чтобы подключить Supabase.',
+    db_on: 'Supabase подключён', db_off: 'Только этот браузер',
+    db_on_note: 'Записи хранятся в базе и видны на всех устройствах.',
+    clear: 'Очистить все данные', clear_sure: 'Точно очистить? Нажмите снова',
+    booked: 'записей'
+  }
+};
+
+class Component extends DCLogic {
+  state = {
+    lang: 'lv', authed: false, passInput: '', passErr: '',
+    data: { bookings: [], blocks: [], hours: NS.DEF_HOURS.map(h => ({ ...h })), step: 30, lead: 3 },
+    view: 'week', date: iso(new Date()), selId: '', panel: 'requests',
+    nbName: '', nbPhone: '', nbSvc: 'gel', nbTime: '', nbErr: '',
+    blDate: iso(new Date()), blFrom: '13:00', blTo: '14:00', blReason: '',
+    mvDate: '', mvTime: '', clientQ: '', copied: false, todayOpen: false,
+    homeHref: NS.homeHref(), confirmClear: false, gated: false,
+    vw: typeof window === 'undefined' ? 1280 : window.innerWidth
+  };
+
+  componentDidMount() {
+    let lang = 'lv', authed = false;
+    try {
+      const l = localStorage.getItem(LANGKEY);
+      if (A[l]) lang = l;
+      authed = localStorage.getItem(AUTHKEY) === '1';
+    } catch (e) { }
+    // A seven-column week is unreadable on a phone; open on the day agenda.
+    const startView = window.innerWidth < 760 ? 'day' : this.state.view;
+    this.setState({ data: NS.load(), lang: lang, authed: authed, view: startView });
+    NS.session(sess => {
+      if (sess.ok) this.setState({ authed: true, gated: true, passErr: '' });
+      else if (sess.configured) this.setState({ gated: true });
+    });
+    NS.pull(d => this.setState({ data: d }));
+    this._stopWatch = NS.watch(d => this.setState({ data: d }));
+    NS.resolveHome(href => this.setState({ homeHref: href }));
+    this._sync = e => { if (!e || e.key === NS.KEY) this.setState({ data: NS.load() }); };
+    window.addEventListener('storage', this._sync);
+    this._k = e => { if (e.key === 'Escape') this.setState({ selId: '', todayOpen: false }); };
+    window.addEventListener('keydown', this._k);
+    this._out = e => {
+      if (!this.state.todayOpen) return;
+      const t = e.target;
+      if (t && t.closest && t.closest('header.nav')) return;
+      this.setState({ todayOpen: false });
+    };
+    document.addEventListener('pointerdown', this._out);
+    this._r = () => { if (window.innerWidth !== this.state.vw) this.setState({ vw: window.innerWidth }); };
+    window.addEventListener('resize', this._r);
+    this._r();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('storage', this._sync);
+    if (this._stopWatch) this._stopWatch();
+    window.removeEventListener('keydown', this._k);
+    document.removeEventListener('pointerdown', this._out);
+    window.removeEventListener('resize', this._r);
+  }
+
+  write(patch) {
+    const d = { ...this.state.data, ...patch };
+    NS.save(d);
+    this.setState({ data: d });
+  }
+  setStatus(id, st) { this.write({ bookings: this.state.data.bookings.map(b => b.id === id ? { ...b, status: st } : b) }); }
+  del(id) { this.setStatus(id, 'deleted'); this.setState({ selId: '' }); }
+
+  unlockNow() {
+    const code = String(this.props.passcode || '2468');
+    if (this.state.passInput === code) {
+      try { localStorage.setItem(AUTHKEY, '1'); } catch (e) { }
+      this.setState({ authed: true, passInput: '', passErr: '' });
+    } else this.setState({ passErr: A[this.state.lang].wrong });
+  }
+  lockNow() {
+    try { localStorage.setItem(AUTHKEY, '0'); } catch (e) { }
+    // A worker-issued session lives in an HttpOnly cookie, so only the
+    // worker can end it.
+    if (this.state.gated) { location.href = NS.logoutUrl; return; }
+    this.setState({ authed: false, passInput: '', selId: '' });
+  }
+
+  rows(dateISO) {
+    const d = this.state.data, out = [];
+    d.bookings.forEach(b => { if (b.date === dateISO && NS.LIVE(b)) out.push({ kind: 'b', at: t2m(b.time), b: b }); });
+    d.blocks.forEach(x => { if (x.date === dateISO) out.push({ kind: 'x', at: t2m(x.from), x: x }); });
+    return out.sort((a, b) => a.at - b.at);
+  }
+  cells(monthISO) {
+    const f = pISO(monthISO), y = f.getFullYear(), m = f.getMonth(), off = (new Date(y, m, 1).getDay() + 6) % 7, out = [];
+    for (let i = 0; i < 42; i++) { const dd = new Date(y, m, 1 - off + i); out.push({ d: dd, iso: iso(dd), other: dd.getMonth() !== m }); }
+    return out;
+  }
+
+  renderVals() {
+    const S = this.state, D = S.data, t = A[S.lang] || A.lv, self = this;
+    const todayISO = iso(new Date()), cur = pISO(S.date);
+    const phone = S.vw < 760, narrow = S.vw < 1100;
+    const money = n => '€' + n;
+    const dfmt = (dISO, o) => new Intl.DateTimeFormat(LOCALE[S.lang], o).format(pISO(dISO));
+    const pill = (on, i, extra) => Object.assign({
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: phone ? 42 : 32, padding: phone ? '0 12px' : '0 10px',
+      fontSize: 12, fontFamily: 'var(--font-heading)', fontWeight: 800, cursor: 'pointer', border: 'none',
+      color: 'var(--color-text)', background: on ? 'var(--color-accent)' : 'transparent',
+      borderLeft: i > 0 ? '1px solid var(--color-divider)' : 'none', whiteSpace: 'nowrap'
+    }, extra || {});
+    const tagCls = st => st === 'confirmed' ? 'tag tag-neutral' : st === 'pending' ? 'tag tag-accent' : 'tag tag-outline';
+
+    const langs = ['LV', 'EN', 'RU'].map((c, i) => {
+      const code = ['lv', 'en', 'ru'][i];
+      return {
+        key: code, code: c, style: pill(S.lang === code, i, { fontSize: 11, letterSpacing: '0.06em' }),
+        pick: () => { try { localStorage.setItem(LANGKEY, code); } catch (e) { } self.setState({ lang: code }); }
+      };
+    });
+    const views = [['week', t.week], ['day', t.day], ['month', t.month]].map((v, i) => ({
+      key: v[0], l: v[1], style: pill(S.view === v[0], i), pick: () => self.setState({ view: v[0] })
+    }));
+    const mkPanels = list => list.map((p, i) => ({
+      key: p[0], l: p[1],
+      style: pill(S.panel === p[0], i, { height: phone ? 42 : 32, fontSize: phone ? 12 : 11, flex: 1, whiteSpace: 'nowrap' }),
+      pick: () => self.setState({ panel: p[0] })
+    }));
+    const panelsA = mkPanels([['requests', t.requests], ['add', t.add_title], ['block', t.block_title]]);
+    const panelsB = mkPanels([['clients', t.clients], ['hours', t.hours]]);
+
+    const rangeLabel = S.view === 'month'
+      ? new Intl.DateTimeFormat(LOCALE[S.lang], { month: phone ? 'short' : 'long', year: 'numeric' }).format(cur)
+      : S.view === 'week'
+        ? new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric' }).format(monday(cur)) + '–' + new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(addD(monday(cur), 6))
+        : new Intl.DateTimeFormat(LOCALE[S.lang], phone
+          ? { weekday: 'short', day: 'numeric', month: 'short' }
+          : { weekday: 'long', day: 'numeric', month: 'long' }).format(cur);
+    const dayLabel = new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'long', day: 'numeric', month: 'long' }).format(cur);
+
+    const wkStart = iso(monday(new Date())), wkEnd = iso(addD(monday(new Date()), 6));
+    const inWeek = D.bookings.filter(b => b.date >= wkStart && b.date <= wkEnd && NS.LIVE(b));
+    const pendingAll = D.bookings.filter(b => b.status === 'pending').sort((a, b) => (a.date + a.time) < (b.date + b.time) ? -1 : 1);
+    const statBox = { background: 'var(--color-surface)', padding: '13px 14px', borderRadius: 5 };
+    const stats = [
+      { key: 'a', k: t.st_today, v: D.bookings.filter(b => b.date === todayISO && NS.LIVE(b)).length, style: statBox },
+      { key: 'b', k: t.st_week, v: inWeek.length, style: statBox },
+      { key: 'c', k: t.st_pend, v: pendingAll.length, style: statBox },
+      { key: 'd', k: t.st_income, v: money(inWeek.reduce((n, b) => n + SVC(b.svc).price, 0)), style: statBox }
+    ];
+
+    // week grid
+    const wStart = monday(cur);
+    const opens = D.hours.filter(h => !h.closed).map(h => t2m(h.o));
+    const closes = D.hours.filter(h => !h.closed).map(h => t2m(h.c));
+    const wOpen = Math.min.apply(null, opens.length ? opens : [600]);
+    const wClose = Math.max.apply(null, closes.length ? closes : [1140]);
+    const PXH = phone ? 54 : 62, OFF = 14, gridH = (wClose - wOpen) / 60 * PXH + OFF;
+    const yAt = m => OFF + (m - wOpen) / 60 * PXH;
+    const hourLines = [];
+    for (let m = wOpen; m <= wClose; m += 60) hourLines.push({ key: m, m: m });
+    const weekHeads = [0, 1, 2, 3, 4, 5, 6].map(i => {
+      const dd = addD(wStart, i), di = iso(dd), on = di === S.date;
+      const n = self.rows(di).filter(r => r.kind === 'b').length;
+      return {
+        key: di, dow: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short' }).format(dd), n: dd.getDate(),
+        count: n ? n + ' ' + t.booked : '',
+        pick: () => self.setState({ date: di, view: 'day', selId: '' }),
+        style: {
+          padding: '8px 6px', cursor: 'pointer', borderLeft: '1px solid var(--color-divider)',
+          background: on ? 'var(--color-accent-200)' : 'transparent',
+          color: di === todayISO ? 'var(--color-accent-800)' : 'var(--color-text)'
+        }
+      };
+    });
+    const hourMarks = [];
+    for (let m = wOpen; m <= wClose; m += 60) hourMarks.push({ key: m, l: m2t(m), style: { position: 'absolute', top: Math.round(yAt(m)) - 6, right: 8, fontSize: 10, lineHeight: '12px', color: 'color-mix(in srgb, var(--color-text) 55%, transparent)' } });
+    const weekCols = [0, 1, 2, 3, 4, 5, 6].map(i => {
+      const dd = addD(wStart, i), di = iso(dd), h = NS.hoursFor(D, di);
+      const items = self.rows(di).map(r => {
+        const isB = r.kind === 'b', sv = isB ? SVC(r.b.svc) : null;
+        const from = isB ? t2m(r.b.time) : t2m(r.x.from), to = isB ? from + sv.min : t2m(r.x.to);
+        const pend = isB && r.b.status === 'pending';
+        const on = isB && r.b.id === S.selId;
+        // A short booking cannot hold three stacked lines, so it collapses to
+        // one "10:00 Name" row rather than clipping text mid-glyph.
+        const boxH = Math.max(24, (to - from) / 60 * PXH - 3);
+        const lines = boxH >= 58 ? 3 : boxH >= 40 ? 2 : 1;
+        return {
+          key: isB ? r.b.id : r.x.id,
+          time: lines === 1 ? m2t(from) + '  ' + (isB ? r.b.name : (r.x.reason || t.s_blocked)) : m2t(from),
+          name: lines === 1 ? '' : (isB ? r.b.name : (r.x.reason || t.s_blocked)),
+          svc: lines === 3 && isB ? sv.n[S.lang] : '',
+          open: () => isB ? self.setState({ selId: r.b.id, mvDate: r.b.date, mvTime: r.b.time }) : self.setState({ date: di, view: 'day' }),
+          style: {
+            position: 'absolute', left: 6, right: 6, top: Math.round(yAt(from)) + 1,
+            height: boxH, borderRadius: 5, overflow: 'hidden',
+            padding: lines === 1 ? '3px 6px' : '4px 6px', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            color: isB ? 'var(--color-text)' : 'color-mix(in srgb, var(--color-text) 60%, transparent)',
+            background: isB ? (pend ? 'var(--color-accent-200)' : 'var(--color-accent-100)')
+              : 'repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-text) 10%, transparent) 6px 12px)',
+            border: isB ? (on ? '2px solid var(--color-accent-700)' : '1px solid var(--color-accent-400)') : '1px dashed var(--color-divider)',
+            boxShadow: on ? 'var(--shadow-md)' : 'none'
+          }
+        };
+      });
+      return {
+        key: di, items: items,
+        lines: hourLines.map(l => ({
+          key: l.key,
+          style: { position: 'absolute', left: 0, right: 0, top: Math.round(yAt(l.m)), height: 1, background: 'var(--color-divider)' }
+        })),
+        style: {
+          position: 'relative', height: gridH,
+          borderLeft: '1px solid var(--color-divider)',
+          backgroundColor: h ? 'transparent' : 'color-mix(in srgb, var(--color-text) 4%, transparent)'
+        }
+      };
+    });
+
+    // day agenda
+    const timeStyle = {
+      width: phone ? '100%' : 112, flex: 'none', fontFamily: 'var(--font-heading)', fontWeight: 800,
+      fontVariantNumeric: 'tabular-nums', fontSize: phone ? 13 : 14,
+      color: phone ? 'var(--color-accent-700)' : 'var(--color-text)'
+    };
+    const actionStyle = {
+      flex: 'none', display: 'flex', alignItems: 'center', gap: 8,
+      width: phone ? '100%' : 'auto', marginTop: phone ? 4 : 0
+    };
+    const dayRows = self.rows(S.date).map(r => {
+      if (r.kind === 'x') return {
+        key: r.x.id, time: r.x.from + ' – ' + r.x.to, name: t.s_blocked, svc: r.x.reason || '', contact: '', note: '',
+        status: '', tagCls: 'tag tag-outline', canConfirm: false, open: () => { }, confirm: () => { },
+        timeStyle: timeStyle, actionStyle: actionStyle,
+        style: {
+          display: 'flex', gap: phone ? '6px 12px' : 16, flexWrap: phone ? 'wrap' : 'nowrap',
+          alignItems: phone ? 'flex-start' : 'center', padding: '15px 8px', borderBottom: '1px solid var(--color-divider)',
+          background: 'repeating-linear-gradient(135deg, transparent 0 8px, color-mix(in srgb, var(--color-text) 6%, transparent) 8px 16px)'
+        }
+      };
+      const b = r.b, sv = SVC(b.svc), on = b.id === S.selId;
+      return {
+        key: b.id, time: b.time + ' – ' + m2t(t2m(b.time) + sv.min), name: b.name,
+        svc: sv.n[S.lang] + ' · ' + sv.min + ' min · ' + money(sv.price),
+        contact: b.phone + (b.email ? ' · ' + b.email : '') + (b.ig ? ' · ' + b.ig : ''),
+        note: (b.first ? t.first_tag + '. ' : '') + (b.note || ''),
+        status: t['s_' + b.status], tagCls: tagCls(b.status), canConfirm: b.status === 'pending',
+        open: () => self.setState({ selId: b.id, mvDate: b.date, mvTime: b.time }),
+        confirm: () => self.setStatus(b.id, 'confirmed'),
+        timeStyle: timeStyle, actionStyle: actionStyle,
+        style: {
+          display: 'flex', gap: phone ? '6px 12px' : 16, flexWrap: phone ? 'wrap' : 'nowrap',
+          alignItems: phone ? 'flex-start' : 'center', padding: '15px 8px', cursor: 'pointer',
+          borderBottom: '1px solid var(--color-divider)', borderRadius: 5,
+          background: on ? 'var(--color-accent-200)' : b.status === 'pending' ? 'var(--color-accent-100)' : 'transparent'
+        }
+      };
+    });
+
+    const monthCells = self.cells(iso(new Date(cur.getFullYear(), cur.getMonth(), 1))).map(c => {
+      const rs = self.rows(c.iso), h = NS.hoursFor(D, c.iso);
+      const items = (phone ? [] : rs.slice(0, 3)).map(r => {
+        const isB = r.kind === 'b';
+        return {
+          key: isB ? r.b.id : r.x.id, l: isB ? r.b.time + ' ' + r.b.name : t.s_blocked,
+          style: {
+            fontSize: 10, marginTop: 3, padding: '2px 5px', borderRadius: 4, overflow: 'hidden',
+            textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            background: isB ? (r.b.status === 'pending' ? 'var(--color-accent-200)' : 'var(--color-accent-100)') : 'transparent',
+            color: 'var(--color-text)', border: isB ? '1px solid var(--color-accent-300)' : '1px dashed var(--color-divider)'
+          }
+        };
+      });
+      return {
+        key: c.iso, n: c.d.getDate(), items: items,
+        badge: phone
+          ? (rs.length ? String(rs.length) : (h ? '' : '—'))
+          : (rs.length > 3 ? '+' + (rs.length - 3) : (h ? '' : t.closed)),
+        pick: () => self.setState({ date: c.iso, view: 'day', selId: '' }),
+        style: {
+          minHeight: phone ? 58 : 100, padding: phone ? '6px 5px' : '7px 8px', borderRadius: 5, cursor: 'pointer',
+          background: c.iso === S.date ? 'var(--color-accent-100)' : 'var(--color-surface)',
+          opacity: c.other ? 0.4 : 1,
+          outline: c.iso === todayISO ? '2px solid var(--color-accent)' : 'none', outlineOffset: -2
+        }
+      };
+    });
+
+    // selection
+    const selB = D.bookings.filter(b => b.id === S.selId)[0];
+    let sel = null, mvSlots = [];
+    if (selB) {
+      const sv = SVC(selB.svc);
+      const mine = D.bookings.filter(b => (b.phone && b.phone === selB.phone) || b.name === selB.name);
+      const hist = mine.slice().sort((a, b) => a.date < b.date ? 1 : -1);
+      const mvDate = S.mvDate || selB.date;
+      mvSlots = NS.slots(D, mvDate, sv.min, true, selB.id).map(x => ({ key: x, t: x }));
+      sel = {
+        ref: selB.ref, name: selB.name, status: t['s_' + selB.status], tagCls: tagCls(selB.status),
+        isFirst: !!selB.first, hasNote: !!selB.note, note: selB.note,
+        rows: [
+          { key: 1, k: t.date, v: dfmt(selB.date, { weekday: 'short', day: 'numeric', month: 'long' }) },
+          { key: 2, k: t.time, v: selB.time + ' – ' + m2t(t2m(selB.time) + sv.min) },
+          { key: 3, k: t.service, v: sv.n[S.lang] },
+          { key: 4, k: t.duration, v: sv.min + ' min' },
+          { key: 5, k: t.price, v: money(sv.price) },
+          { key: 6, k: t.f_phone, v: selB.phone || '—' },
+          { key: 7, k: t.f_email, v: selB.email || '—' },
+          { key: 8, k: 'Instagram', v: selB.ig || '—' }
+        ],
+        canConfirm: selB.status === 'pending', canDecline: selB.status !== 'declined',
+        confirm: () => self.setStatus(selB.id, 'confirmed'),
+        decline: () => self.setStatus(selB.id, 'declined'),
+        remove: () => self.del(selB.id),
+        visits: '(' + mine.length + ')', hasHistory: mine.length > 1,
+        history: hist.map(b => ({ key: b.id, l: dfmt(b.date, { day: 'numeric', month: 'short', year: 'numeric' }) + ' · ' + b.time + ' · ' + SVC(b.svc).n[S.lang] + ' · ' + t['s_' + b.status] }))
+      };
+    }
+
+    const nbSlots = NS.slots(D, S.date, SVC(S.nbSvc).min, true).map(x => ({ key: x, t: x }));
+    const clientMap = {};
+    D.bookings.forEach(b => {
+      const k = b.phone || b.name;
+      if (!clientMap[k]) clientMap[k] = { name: b.name, phone: b.phone, list: [] };
+      clientMap[k].list.push(b);
+    });
+    const q = S.clientQ.toLowerCase();
+    const clients = Object.keys(clientMap).map(k => clientMap[k])
+      .filter(c => !q || (c.name + ' ' + c.phone).toLowerCase().indexOf(q) > -1)
+      .sort((a, b) => b.list.length - a.list.length)
+      .map(c => {
+        const sorted = c.list.slice().sort((a, b) => a.date < b.date ? 1 : -1);
+        return {
+          key: c.phone || c.name, name: c.name, phone: c.phone || '—',
+          visits: c.list.length + ' ' + t.visits,
+          last: t.last + ': ' + dfmt(sorted[0].date, { day: 'numeric', month: 'short', year: 'numeric' }) + ' · ' + money(c.list.reduce((n, b) => n + SVC(b.svc).price, 0)),
+          open: () => self.setState({ selId: sorted[0].id, mvDate: sorted[0].date, mvTime: sorted[0].time, date: sorted[0].date })
+        };
+      });
+
+    const hourEdits = [1, 2, 3, 4, 5, 6, 0].map(i => {
+      const h = D.hours[i];
+      return {
+        key: i, dow: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: 'short' }).format(new Date(2024, 0, 1 + ((i + 6) % 7))),
+        open: h.o, close: h.c, closed: h.closed, mark: h.closed ? '×' : '✓',
+        onOpen: e => { const v = e.target.value; self.write({ hours: D.hours.map((x, j) => j === i ? { ...x, o: v } : x) }); },
+        onClose: e => { const v = e.target.value; self.write({ hours: D.hours.map((x, j) => j === i ? { ...x, c: v } : x) }); },
+        toggle: () => self.write({ hours: D.hours.map((x, j) => j === i ? { ...x, closed: !x.closed } : x) }),
+        toggleStyle: { width: 24, height: 26, borderRadius: 5, border: '1px solid var(--color-divider)', background: h.closed ? 'transparent' : 'var(--color-accent)', color: 'var(--color-text)', cursor: 'pointer', fontSize: 12, padding: 0 }
+      };
+    });
+
+    const shift = n => {
+      const nd = S.view === 'month'
+        ? new Date(cur.getFullYear(), cur.getMonth() + n, Math.min(cur.getDate(), 28))
+        : addD(cur, S.view === 'week' ? 7 * n : n);
+      self.setState({ date: iso(nd) });
+    };
+
+    return {
+      shellStyle: {
+        display: 'grid', alignItems: 'start',
+        gridTemplateColumns: narrow ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(320px,380px)'
+      },
+      asideStyle: narrow
+        ? { borderTop: '2px solid var(--color-divider)', padding: phone ? '18px 14px' : '22px 20px' }
+        : { borderLeft: '2px solid var(--color-divider)', minHeight: '76vh', padding: '22px 20px', position: 'sticky', top: 61 },
+      weekInnerStyle: { minWidth: 58 + 7 * (phone ? 82 : 104) },
+      headerStyle: {
+        position: phone ? 'relative' : 'sticky', top: 0, zIndex: 30,
+        background: 'var(--color-bg)', flexWrap: 'wrap', gap: phone ? '8px 10px' : '10px 14px',
+        paddingLeft: phone ? 14 : undefined, paddingRight: phone ? 14 : undefined,
+        paddingTop: phone ? 12 : undefined, paddingBottom: phone ? 12 : undefined
+      },
+      navGroupStyle: {
+        display: 'flex', alignItems: 'center', gap: 8,
+        flex: phone ? '1 0 100%' : 'none', order: phone ? 3 : 'initial'
+      },
+      rangeStyle: {
+        fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 15,
+        marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, paddingRight: 2
+      },
+      mainStyle: { padding: phone ? '18px 14px' : '22px 26px', minHeight: phone ? 0 : '76vh' },
+      statsStyle: {
+        display: 'grid', gap: 2, marginBottom: phone ? 18 : 22,
+        gridTemplateColumns: phone ? 'repeat(2,minmax(0,1fr))' : 'repeat(auto-fit,minmax(140px,1fr))'
+      },
+      panelGroupStyle: {
+        display: 'flex', flexWrap: phone ? 'wrap' : 'nowrap',
+        border: '1px solid var(--color-divider)', borderRadius: 5, overflow: 'hidden'
+      },
+      homeHref: S.homeHref,
+      t: t, brandName: this.props.studioName || 'Nail Studio',
+      locked: !S.authed, open: S.authed,
+      passInput: S.passInput, passErr: S.passErr,
+      onPass: e => self.setState({ passInput: e.target.value, passErr: '' }),
+      onPassKey: e => { if (e.key === 'Enter') self.unlockNow(); },
+      unlock: () => self.unlockNow(), lock: () => self.lockNow(),
+      langs: langs, views: views, panelsA: panelsA, panelsB: panelsB, stats: stats,
+      rangeLabel: rangeLabel, dayLabel: dayLabel, phone: phone, notPhone: !phone,
+      // Kept in the phone header (icon-only) — it is a one-tap route back to the site
+      toSiteLabel: phone ? '⌂' : t.to_site,
+      toSiteStyle: phone
+        ? { whiteSpace: 'nowrap', width: 44, minWidth: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }
+        : { whiteSpace: 'nowrap' },
+      dayShort: dfmt(S.date, { day: 'numeric', month: 'short' }),
+      prev: () => shift(-1), next: () => shift(1), today: () => self.setState({ date: todayISO }),
+      /* "Today" is a jump AND a scope pick: each option snaps the calendar to
+         the current date and switches the view to that span. */
+      todayOpen: S.todayOpen,
+      toggleToday: () => self.setState({ todayOpen: !S.todayOpen }),
+      todayOpts: [['day', t.day], ['week', t.week], ['month', t.month]].map(o => ({
+        key: o[0], l: o[1],
+        hint: o[0] === 'day'
+          ? new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(new Date())
+          : o[0] === 'week'
+            ? new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric' }).format(monday(new Date())) + '–' + new Intl.DateTimeFormat(LOCALE[S.lang], { day: 'numeric', month: 'short' }).format(addD(monday(new Date()), 6))
+            : new Intl.DateTimeFormat(LOCALE[S.lang], { month: 'long' }).format(new Date()),
+        pick: () => self.setState({ date: todayISO, view: o[0], selId: '', todayOpen: false }),
+        style: {
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          width: '100%', minHeight: 44, padding: '0 12px', border: 'none', cursor: 'pointer',
+          textAlign: 'left', fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 13,
+          color: 'var(--color-text)',
+          background: S.view === o[0] ? 'var(--color-accent-200)' : 'transparent',
+          borderTop: o[0] === 'day' ? 'none' : '1px solid var(--color-divider)'
+        }
+      })),
+      isWeek: S.view === 'week', isDay: S.view === 'day', isMonth: S.view === 'month',
+      weekHeads: weekHeads, hourMarks: hourMarks, weekCols: weekCols,
+      axisStyle: { position: 'relative', height: gridH },
+      dowShort: [0, 1, 2, 3, 4, 5, 6].map(i => ({
+        key: i,
+        // 'short' labels ("Ceturtd.") are wider than a phone month column
+        l: new Intl.DateTimeFormat(LOCALE[S.lang], { weekday: phone ? 'narrow' : 'short' }).format(new Date(2024, 0, 1 + i))
+      })),
+      dowStyle: {
+        fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
+        padding: phone ? '4px 2px' : '4px 6px', textAlign: phone ? 'center' : 'left',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+      },
+      monthCells: monthCells,
+      dayRows: dayRows, dayEmpty: dayRows.length === 0,
+      daySummary: dayRows.length + ' ' + t.booked + ' · ' + NS.slots(D, S.date, 60, true).length + ' ' + t.free,
+      copyLabel: S.copied ? t.copied : t.copy,
+      copyDay: () => {
+        const txt = rangeLabel + '\n' + dayRows.map(r => r.time + '  ' + r.name + '  ' + r.svc + '  ' + r.contact).join('\n');
+        try { navigator.clipboard.writeText(txt); } catch (e) { }
+        self.setState({ copied: true });
+        setTimeout(() => self.setState({ copied: false }), 1600);
+      },
+      printDay: () => window.print(),
+      hasSel: !!sel, noSel: !sel, sel: sel, mvSlots: mvSlots,
+      clearSel: () => self.setState({ selId: '' }),
+      mv: {
+        date: S.mvDate || (selB ? selB.date : S.date), time: S.mvTime || (selB ? selB.time : ''),
+        onDate: e => self.setState({ mvDate: e.target.value, mvTime: '' }),
+        onTime: e => self.setState({ mvTime: e.target.value })
+      },
+      doMove: () => {
+        if (!selB) return;
+        const nd = S.mvDate || selB.date, nt = S.mvTime || (mvSlots[0] ? mvSlots[0].t : selB.time);
+        self.write({ bookings: D.bookings.map(b => b.id === selB.id ? { ...b, date: nd, time: nt } : b) });
+        self.setState({ date: nd, mvTime: nt });
+      },
+      pReq: S.panel === 'requests', pAdd: S.panel === 'add', pBlock: S.panel === 'block',
+      pClients: S.panel === 'clients', pHours: S.panel === 'hours',
+      pendCount: pendingAll.length ? '(' + pendingAll.length + ')' : '', noPending: pendingAll.length === 0,
+      pending: pendingAll.map(b => ({
+        key: b.id, name: b.name + (b.first ? ' · ' + t.first_tag : ''),
+        when: dfmt(b.date, { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + b.time,
+        svc: SVC(b.svc).n[S.lang] + ' · ' + money(SVC(b.svc).price),
+        contact: b.phone + (b.email ? ' · ' + b.email : '') + (b.ig ? ' · ' + b.ig : ''),
+        open: () => self.setState({ selId: b.id, date: b.date, mvDate: b.date, mvTime: b.time }),
+        confirm: () => self.setStatus(b.id, 'confirmed'), decline: () => self.setStatus(b.id, 'declined')
+      })),
+      serviceOpts: SERVICES.map(s => ({ key: s.id, id: s.id, label: s.n[S.lang] + ' · ' + s.min + ' min · ' + money(s.price) })),
+      nb: {
+        name: S.nbName, phone: S.nbPhone, svc: S.nbSvc, time: S.nbTime || (nbSlots[0] ? nbSlots[0].t : ''),
+        onName: e => self.setState({ nbName: e.target.value }), onPhone: e => self.setState({ nbPhone: e.target.value }),
+        onSvc: e => self.setState({ nbSvc: e.target.value, nbTime: '' }), onTime: e => self.setState({ nbTime: e.target.value })
+      },
+      nbSlots: nbSlots, nbErr: S.nbErr,
+      addBooking: () => {
+        const time = S.nbTime || (nbSlots[0] ? nbSlots[0].t : '');
+        if (!S.nbName.trim() || !time) { self.setState({ nbErr: t.err }); return; }
+        self.write({
+          bookings: D.bookings.concat([{
+            id: uid(), ref: 'NS-' + uid().slice(0, 4).toUpperCase(), date: S.date, time: time, svc: S.nbSvc,
+            name: S.nbName.trim(), phone: S.nbPhone.trim(), email: '', ig: '', note: '', first: false,
+            status: 'confirmed', made: Date.now()
+          }])
+        });
+        self.setState({ nbName: '', nbPhone: '', nbTime: '', nbErr: '' });
+      },
+      bl: {
+        date: S.blDate, from: S.blFrom, to: S.blTo, reason: S.blReason,
+        onDate: e => self.setState({ blDate: e.target.value }), onFrom: e => self.setState({ blFrom: e.target.value }),
+        onTo: e => self.setState({ blTo: e.target.value }), onReason: e => self.setState({ blReason: e.target.value })
+      },
+      addBlock: () => { self.write({ blocks: D.blocks.concat([{ id: uid(), date: S.blDate, from: S.blFrom, to: S.blTo, reason: S.blReason }]) }); self.setState({ blReason: '' }); },
+      blockDay: () => { self.write({ blocks: D.blocks.concat([{ id: uid(), date: S.blDate, from: '00:00', to: '23:59', reason: S.blReason || t.s_blocked }]) }); self.setState({ blReason: '' }); },
+      blockList: D.blocks.slice().sort((a, b) => a.date < b.date ? -1 : 1).map(b => ({
+        key: b.id, l: b.date + ' · ' + b.from + '–' + b.to + (b.reason ? ' · ' + b.reason : ''),
+        remove: () => self.write({ blocks: D.blocks.filter(x => x.id !== b.id) })
+      })),
+      clientQ: S.clientQ, onClientQ: e => self.setState({ clientQ: e.target.value }), clients: clients,
+      hourEdits: hourEdits,
+      stepOpts: [15, 30, 60].map((v, i) => ({ key: v, l: v + ' min', style: pill(D.step === v, i), pick: () => self.write({ step: v }) })),
+      leadOpts: [0, 2, 3, 12].map((v, i) => ({ key: v, l: v + ' h', style: pill(D.lead === v, i), pick: () => self.write({ lead: v }) })),
+      dbLabel: NS.remote() ? t.db_on : t.db_off,
+      dbNote: NS.remote() ? t.db_on_note : t.datanote,
+      dbDotStyle: {
+        width: 9, height: 9, borderRadius: 5, flex: 'none',
+        background: NS.remote() ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 30%, transparent)'
+      },
+      clearLabel: S.confirmClear ? t.clear_sure : t.clear,
+      clearAll: () => {
+        if (!S.confirmClear) {
+          self.setState({ confirmClear: true });
+          setTimeout(() => self.setState({ confirmClear: false }), 4000);
+          return;
+        }
+        self.setState({ confirmClear: false, selId: '' });
+        self.write({ bookings: [], blocks: [] });
+      },
+      exportJson: () => {
+        try {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' }));
+          a.download = 'nailstudio-bookings.json'; a.click();
+        } catch (e) { }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
