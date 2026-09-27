@@ -7,8 +7,8 @@
    database is protected by the row-level-security policies in SETUP.md.
    ──────────────────────────────────────────────────────────────────────── */
 window.NAIL_CONFIG = {
-  supabaseUrl: '',      // e.g. 'https://abcdefgh.supabase.co'
-  supabaseAnonKey: '',  // the long "anon public" key from Supabase → API
+  supabaseUrl: 'sb_publishable_960C2mn5EG9g7o7qv7WkbQ_UHGOHhfS',      // e.g. 'https://abcdefgh.supabase.co'
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3V5dnVxcG1ic2tpbXFpcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0OTk1MTQsImV4cCI6MjEwNjA3NTUxNH0.Jvjelx0hD2ax7QoBxei3kZ-5kpfMO94HMM_irM-hGzk',  // the long "anon public" key from Supabase → API
 
   // How often the admin calendar re-checks the database, in seconds.
   pollSeconds: 20
